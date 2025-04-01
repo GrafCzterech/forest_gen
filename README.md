@@ -1,4 +1,4 @@
-# python-template
+# forest-gen
 
 ## Polecane rozszerzenia do vscode
 
