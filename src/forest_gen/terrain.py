@@ -1,4 +1,5 @@
 from opensimplex import noise2
+import numpy as np
 
 from .func_stack import MultiLayerFunc
 
@@ -19,7 +20,7 @@ def normalized_noise2(x: float, y: float) -> float:
 
 def generate_generic_step(
     div: int,
-) -> tuple[tuple[tuple[float, ...], ...], tuple[float, ...]]:
+) -> tuple[tuple[np.ndarray, ...], np.ndarray]:
     """Generate a step for the noise function.
 
     Args:
@@ -40,7 +41,10 @@ def generate_generic_step(
         tuple[tuple[float, ...], tuple[float, ...]]: The step for the noise function.
     """
     eps = 1.0 / div**2
-    return (((0.0, eps), (0.0, eps)), (0.0, 10.0 * (div - 1)))
+    return (
+        (np.array((eps, 0.0)), np.array((eps, 0.0))),
+        np.array((10.0 * (div - 1), 0.0)),
+    )
 
 
 NOISE_FUNC = MultiLayerFunc(normalized_noise2)

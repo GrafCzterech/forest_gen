@@ -1,15 +1,15 @@
 from collections.abc import Callable
 from typing import TypeAlias
 
-from numpy.polynomial import Polynomial
+import numpy as np
 
 Func: TypeAlias = Callable[..., float]
 
 
 def call_func(
     func: Func,
-    arg_transform: tuple[Polynomial | None, ...] | None,
-    out_transform: Polynomial | None | None,
+    arg_transform: tuple[np.ndarray | None, ...] | None,
+    out_transform: np.ndarray | None,
     *args: float,
 ) -> float:
     """Call a function with transformed arguments and output.
@@ -24,12 +24,12 @@ def call_func(
     """
     if arg_transform is not None:
         args = tuple(
-            (float(trans(arg)) if trans is not None else arg)
+            (float(np.polyval(trans, arg)) if trans is not None else arg)
             for arg, trans in zip(args, arg_transform)
         )
     value = func(*args)
     if out_transform is not None:
-        value = float(out_transform(value))
+        value = float(np.polyval(out_transform, value))
     return value
 
 
@@ -48,15 +48,15 @@ class MultiLayerFunc:
         self.func = func
         self.layers: list[
             tuple[
-                tuple[Polynomial | None, ...],
-                Polynomial | None,
+                tuple[np.ndarray | None, ...],
+                np.ndarray | None,
             ]
         ] = []
 
     def add_step(
         self,
-        arg_shift: tuple[tuple[float, ...] | None, ...],
-        out_shift: tuple[float, ...] | None,
+        arg_shift: tuple[np.ndarray | None, ...],
+        out_shift: np.ndarray | None,
     ) -> None:
         """Add a step to the function stack.
 
@@ -64,15 +64,7 @@ class MultiLayerFunc:
             arg_shift (tuple[tuple[float, ...]  |  None, ...]): Polynomial coefficients for transformations of each argument.
             out_shift (tuple[float, ...] | None): Transformation for the output.
         """
-        self.layers.append(
-            (
-                tuple(
-                    Polynomial(shift) if shift is not None else None
-                    for shift in arg_shift
-                ),
-                Polynomial(out_shift) if out_shift is not None else None,
-            )
-        )
+        self.layers.append((arg_shift, out_shift))
 
     def __call__(self, *args: float) -> float:
         """Call the function with transformed arguments.
