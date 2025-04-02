@@ -1,5 +1,6 @@
 from collections.abc import Callable
 from typing import TypeAlias
+from functools import cache  # MAYBE cache
 
 import numpy as np
 
@@ -15,21 +16,25 @@ def call_func(
     """Call a function with transformed arguments and output.
 
     Args:
-        func (Func): Function to call.
-        arg_transform (tuple[Polynomial  |  None, ...] | None): Argument transformations.
-        out_transform (Polynomial | None | None): Output transformation.
+        func (Func): Function to be called.
+        arg_transform (tuple[np.ndarray  |  None, ...] | None): Polynomial coefficients for transformations of each argument.
+        out_transform (np.ndarray | None): Transformation for the output.
+        *args (float): Arguments to the function.
 
     Returns:
         float: Transformed function output.
     """
     if arg_transform is not None:
-        args = tuple(
-            (float(np.polyval(trans, arg)) if trans is not None else arg)
-            for arg, trans in zip(args, arg_transform)
+        value = func(
+            *(
+                np.polyval(trans, arg) if trans is not None else arg
+                for arg, trans in zip(args, arg_transform)
+            )
         )
-    value = func(*args)
+    else:
+        value = func(*args)
     if out_transform is not None:
-        value = float(np.polyval(out_transform, value))
+        value = np.polyval(out_transform, value).item()
     return value
 
 
@@ -61,8 +66,8 @@ class MultiLayerFunc:
         """Add a step to the function stack.
 
         Args:
-            arg_shift (tuple[tuple[float, ...]  |  None, ...]): Polynomial coefficients for transformations of each argument.
-            out_shift (tuple[float, ...] | None): Transformation for the output.
+            arg_shift (tuple[np.ndarray  |  None, ...]): Polynomial coefficients for transformations of each argument.
+            out_shift (np.ndarray | None): Transformation for the output.
         """
         self.layers.append((arg_shift, out_shift))
 
