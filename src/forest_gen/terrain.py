@@ -13,7 +13,8 @@ def normalized_noise2(x: float, y: float) -> float:
         y (float): The y coordinate.
 
     Returns:
-        float: The normalized noise value.
+        float: The normalized noise value. Assuming perfectly random input, the
+        expected value is 0.5.
     """
     return (noise2(x, y) + 1.0) / 2.0
 
@@ -43,7 +44,7 @@ def generate_generic_step(
     Returns:
         tuple[tuple[float, ...], tuple[float, ...]]: The step for the noise function.
     """
-    eps = 1.0 / div**2
+    eps = 1.0 / (div + 1) ** 2
     return (
         (IDENTITY_POLY * eps, IDENTITY_POLY * eps),
         IDENTITY_POLY * 1.0 * div,
@@ -60,11 +61,14 @@ def shift_step(diff: float, base: float = 1.0) -> tuple[np.ndarray, ...]:
     Returns:
         tuple[np.ndarray, ...]: The argument transformations for the noise function.
     """
-    return IDENTITY_POLY * (base + diff), IDENTITY_POLY * (base - diff)
+    return (
+        IDENTITY_POLY * (1.0 + diff) * base,
+        IDENTITY_POLY * (1.0 - diff) * base,
+    )
 
 
 NOISE_FUNC = MultiLayerFunc(normalized_noise2)
 NOISE_FUNC.add_step(*generate_generic_step(1))
 NOISE_FUNC.add_step(*generate_generic_step(2))
 NOISE_FUNC.add_step(*generate_generic_step(4))
-NOISE_FUNC.add_step(shift_step(0.005, 0.001), np.array((-3.5, 5.0)))
+NOISE_FUNC.add_step(shift_step(0.5, 0.0001), np.array((-3.5, 5.0)))
