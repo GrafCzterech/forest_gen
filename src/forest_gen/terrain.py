@@ -18,6 +18,9 @@ def normalized_noise2(x: float, y: float) -> float:
     return (noise2(x, y) + 1.0) / 2.0
 
 
+IDENTITY_POLY = np.array((0.0, 1.0))
+
+
 def generate_generic_step(
     div: int,
 ) -> tuple[tuple[np.ndarray, ...], np.ndarray]:
@@ -42,12 +45,26 @@ def generate_generic_step(
     """
     eps = 1.0 / div**2
     return (
-        (np.array((eps, 0.0)), np.array((eps, 0.0))),
-        np.array((10.0 * (div - 1), 0.0)),
+        (IDENTITY_POLY * eps, IDENTITY_POLY * eps),
+        IDENTITY_POLY * 1.0 * div,
     )
+
+
+def shift_step(diff: float, base: float = 1.0) -> tuple[np.ndarray, ...]:
+    """Return the argument transformations for the noise function, where the
+    noise is shifted by the vector.
+
+    Args:
+        diff (float): The difference between the x and y shift
+
+    Returns:
+        tuple[np.ndarray, ...]: The argument transformations for the noise function.
+    """
+    return IDENTITY_POLY * (base + diff), IDENTITY_POLY * (base - diff)
 
 
 NOISE_FUNC = MultiLayerFunc(normalized_noise2)
 NOISE_FUNC.add_step(*generate_generic_step(1))
 NOISE_FUNC.add_step(*generate_generic_step(2))
 NOISE_FUNC.add_step(*generate_generic_step(4))
+NOISE_FUNC.add_step(shift_step(0.005, 0.001), np.array((-3.5, 5.0)))

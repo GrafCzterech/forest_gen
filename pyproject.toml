@@ -9,7 +9,7 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy==2.2.4",
+    "numpy>=2.0.0",
     "opensimplex==0.4.5.1",
     "neuroforgelab @ git+ssh://git@github.com/GrafCzterech/NeuroForgeLab.git@main",
 ]
