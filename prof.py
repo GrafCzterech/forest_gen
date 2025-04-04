@@ -1,6 +1,6 @@
 import cProfile
 
-from forest_gen.terrain import NOISE_FUNC
+from forest_gen.heightmap import NOISE_FUNC
 
 
 def test_func():
