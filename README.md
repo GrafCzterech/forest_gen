@@ -20,3 +20,8 @@ tested separately.
 The underlying terrain is generated using
 [OpenSimplex](https://en.wikipedia.org/wiki/OpenSimplex_noise) noise. It
 suposedly is a superior iteration on Perlin noise.
+
+## Assets
+
+Trees for rudimentary simulation can be found under this address:
+[TreesPackage](https://drive.google.com/file/d/1LULIDdkIpjy51-J21E4exNFdomADHbqy/view?usp=sharing)
