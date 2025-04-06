@@ -17,7 +17,7 @@ def heightmap_to_mesh(
         Trimesh: A trimesh object representing the 3D mesh.
     """
     # Create a grid of points
-    x = y = np.linspace(0, size * step, size)
+    x = y = np.linspace(0, size * step, size, retstep=False)
     X, Y = np.meshgrid(x, y)
 
     # Compute the heights
