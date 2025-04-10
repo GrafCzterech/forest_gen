@@ -1,7 +1,7 @@
 import random
 
 
-def gen_grid(size: int) -> [(int,int)]:
+def gen_grid(size: int) -> list[tuple[int]]:
     # Generate grid of 100 squares each beeing 10% of size given to the function
     # (if size is not divisible by 10, function leaves out the difference (int amiright?
     grid = []
@@ -12,7 +12,7 @@ def gen_grid(size: int) -> [(int,int)]:
                 grid.append((i, j))
     return grid
 
-def gen_coords(size: int) -> [(int,int)]:
+def gen_coords(size: int) -> list[tuple[int]]:
     # Generate coordinates for assets in a grid leaving 20% space between edges of the grid
     grid = gen_grid(size)
     coords = []
