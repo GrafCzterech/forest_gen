@@ -26,3 +26,5 @@ def gen_coords(size: int) -> [(int,int)]:
         y = random.randint(ymin, ymax)
         coords.append((x, y))
     return coords
+
+# linux test
