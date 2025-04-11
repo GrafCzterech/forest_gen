@@ -8,7 +8,7 @@ from .heightmap import NOISE_FUNC, heightmap_to_mesh
 
 class ForestGenSpec(SceneSpec):
     def __init__(self, size: int = 512):
-        super().__init__(size=(size, size))
+        super().__init__(size=(size, size), palette=[], static=[])
 
     def generate(self) -> TerrainInstance:
 
