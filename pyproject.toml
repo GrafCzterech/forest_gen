@@ -12,6 +12,7 @@ dependencies = [
     "numpy>=2.0.0",
     "opensimplex==0.4.5.1",
     "trimesh==4.6.6",
+    "scipy>=1.0.0",
     "neuroforgelab @ git+ssh://git@github.com/GrafCzterech/NeuroForgeLab.git@main",
 ]
 
