@@ -16,7 +16,7 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["forest_gen"]
+packages = ["forest_gen", "forest_gen.heightmap", "forest_gen.asset_dist"]
 package-dir = { "" = "src" }
 
 [project.optional-dependencies]
