@@ -4,6 +4,8 @@ import numpy as np
 
 from opensimplex import OpenSimplex
 
+# Old scribble from Tomek
+
 # first we create a grid
 # then a map of grid cell -> radius
 # then for each cell we create a poisson disk
@@ -34,9 +36,9 @@ def sample_positions(
             poisson_disk = PoissonDisk(
                 d=2,
                 radius=radius,
-                l_bounds=[x, y],
-                u_bounds=[x + eps, y + eps],
-                rng=seed,
+                #l_bounds=[x, y],
+                #u_bounds=[x + eps, y + eps],
+                #rng=seed,
             )
             # sample points
             for point in poisson_disk.fill_space():
