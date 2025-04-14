@@ -23,7 +23,7 @@ package-dir = { "" = "src" }
 [project.optional-dependencies]
 dev = ["black"]
 test = ["unittest"]
-vis = ["matplotlib"]
+vis = ["matplotlib", "ipykernel"]
 
 [project.urls]
 Repository = "https://github.com/GrafCzterech/forest-gen"

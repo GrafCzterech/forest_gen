@@ -1,6 +1,8 @@
 from neuroforgelab import SceneSpec, AssetSpec
 from neuroforgelab.terrain import TerrainInstance
 
+import numpy as np
+
 from .heightmap import NOISE_FUNC, heightmap_to_mesh
 
 
@@ -13,8 +15,8 @@ class ForestGenSpec(SceneSpec):
         # TODO add here some sort of nodes that trees should generate at
 
         return TerrainInstance(
-            heightmap_to_mesh(NOISE_FUNC, int(self.size[0])),
-            (0.0, 0.0, 0.0),
+            [heightmap_to_mesh(NOISE_FUNC, int(self.size[0]))],
+            np.array((0.0, 0.0, 0.0)),
             self.size,
         )  # then add those pos's to this object
 
