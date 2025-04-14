@@ -102,7 +102,9 @@ class Plant:
 class Simulation:
     """A simulation of a forest used to generate realistic plant positions."""
 
-    def __init__(self, size: int, species: dict[str, set[Species]]):
+    def __init__(
+        self, size: tuple[float, float], species: dict[str, set[Species]]
+    ):
         """Initialize the simulation.
 
         Args:
@@ -119,7 +121,7 @@ class Simulation:
                 for species in type_species
             ),
             l_bounds=(0, 0),
-            u_bounds=(size, size),
+            u_bounds=size,
         )
 
     def run_state(self, num_years: int, state: list[Plant]) -> list[Plant]:
@@ -150,9 +152,9 @@ class Simulation:
                     # sanity check
                     if (
                         new_plant.coords[0] < 0
-                        or new_plant.coords[0] > self.size
+                        or new_plant.coords[0] > self.size[0]
                         or new_plant.coords[1] < 0
-                        or new_plant.coords[1] > self.size
+                        or new_plant.coords[1] > self.size[1]
                     ):
                         continue
                     state.append(new_plant)
@@ -194,11 +196,17 @@ class Simulation:
         for type_species in self.species.values():
             for species in type_species:
                 n = (
-                    scene_density * species.species_density * self.size**2
+                    scene_density
+                    * species.species_density
+                    * self.size[0]
+                    * self.size[1]
                 ) / len(type_species)
                 for _ in range(int(n)):
                     point = self.disk.random()
-                    # FIXME
+                    if len(point) == 0:
+                        self.disk.reset()
+                        point = self.disk.random()
+                    point = point[0]
                     instances.append(
                         Plant(
                             (point[0], point[1]),
