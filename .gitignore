@@ -176,3 +176,5 @@ cython_debug/
 env_forestgen
 
 *.prof
+
+cache
