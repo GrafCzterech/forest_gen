@@ -30,7 +30,7 @@ class HeightmapTerrain(TerrainInstance):
 
 
 class ForestGenSpec(SceneSpec):
-    def __init__(self, size: int = 512):
+    def __init__(self, size: int = 256):
         super().__init__(size=(size, size), robot=None, palette=[])
         self.add_asset(TreeSpec())
 
@@ -72,9 +72,9 @@ class TreeSpec(AssetSpec):
             list[AssetInstance]: A list of generated tree asset instances.
         """
         logging.debug("Starting simulation")
-        # TODO wang tiles here?
         sim = Simulation(terrain.size, {self.name: self.tree_species})
-        state = sim.run(self.sim_duration, self.tree_density)
+        state = sim.new_state(self.tree_density)
+        state.run_state(self.sim_duration)
         logging.debug("Simulation finished")
         return [
             self.create_instance(
