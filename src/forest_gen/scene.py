@@ -1,8 +1,13 @@
 from typing import Callable
+import logging
 
-from neuroforgelab import SceneSpec, AssetSpec
-from neuroforgelab.asset import AssetInstance
-from neuroforgelab.terrain import TerrainInstance
+from neuroforgelab import (
+    SceneSpec,
+    AssetSpec,
+    AssetInstance,
+    TerrainInstance,
+    UniversalMesh,
+)
 
 from trimesh import Trimesh
 
@@ -66,13 +71,15 @@ class TreeSpec(AssetSpec):
         Returns:
             list[AssetInstance]: A list of generated tree asset instances.
         """
+        logging.debug("Starting simulation")
         # TODO wang tiles here?
         sim = Simulation(terrain.size, {self.name: self.tree_species})
         state = sim.run(self.sim_duration, self.tree_density)
+        logging.debug("Simulation finished")
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
-                plant_to_model(plant),
+                UniversalMesh(plant_to_model(plant)),
                 (plant.coords[0], terrain.raw(*plant.coords), plant.coords[1]),
                 (0.0, 0.0, 0.0, 0.0),
             )

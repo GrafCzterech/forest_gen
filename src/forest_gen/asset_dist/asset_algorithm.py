@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import random
 import math
 from typing import Callable
+import logging
 
 from opensimplex import OpenSimplex
 from scipy.stats.qmc import PoissonDisk
@@ -136,7 +137,8 @@ class Simulation:
         """
         # return value imples the argument will not be modified
         state = state.copy()
-        for _ in range(num_years):
+        for year in range(num_years):
+            logging.debug(f"Year {year + 1}/{num_years}")
             pop_counter: dict[Species, int] = {}
             for plant in state:
                 count = pop_counter.get(plant.species, 0)
