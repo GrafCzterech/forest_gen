@@ -24,11 +24,14 @@ class TestSimulationState(unittest.TestCase):
         init = (
             Plant((0, 0), self.species_a, 0),
             Plant((1, 1), self.species_b, 0),
+            Plant((10, 10), self.species_a, 0),
         )
         state = SimulationState(init, (10, 10))
         self.assertIn(init[1], state.get_nearby(init[0]))
+        self.assertNotIn(init[2], state.get_nearby(init[0]))
         state = SimulationState(init, (20, 20))
         self.assertIn(init[1], state.get_nearby(init[0]))
+        self.assertNotIn(init[2], state.get_nearby(init[0]))
 
     def test_auto_find_nearby(self):
         size = 10
@@ -49,7 +52,9 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(dist(a.coords, b.coords), a.radius)
+                self.assertGreaterEqual(
+                    dist(a.coords, b.coords), a.species.radius
+                )
         self.assertTrue(not_empty)
 
     def test_post_sim_state(self):
@@ -63,7 +68,9 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(dist(a.coords, b.coords), a.radius)
+                self.assertGreaterEqual(
+                    dist(a.coords, b.coords), a.species.radius
+                )
         self.assertTrue(not_empty)
 
 

@@ -3,7 +3,7 @@ from .asset_dist import Plant
 from os import path
 
 MODEL_CACHE_PATH = "cache"
-EXTENSION = ".glb"
+EXTENSION = "glb"
 
 
 def plant_to_model(plant: Plant) -> str:
