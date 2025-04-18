@@ -25,10 +25,8 @@ class SimulationState:
         self.grid_height = int(size[1] / self.cell_height)
         self.size = size
         self.map = tuple(
-            tuple(
-                [[] for _ in range(self.grid_height + 1)]
-                for _ in range(self.grid_width + 1)
-            )
+            tuple([] for _ in range(self.grid_height + 1))
+            for _ in range(self.grid_width + 1)
         )
         for plant in plants:
             self.add(copy(plant))
@@ -92,18 +90,6 @@ class SimulationState:
             chain[Plant]: Plants in the simulation state.
         """
         return chain.from_iterable(chain.from_iterable(self.map))
-
-    def __contains__(self, plant: Plant) -> bool:
-        """Check if a plant is in the simulation state.
-
-        Args:
-            plant (Plant): Plant to check.
-
-        Returns:
-            bool: True if the plant is in the simulation state, False otherwise.
-        """
-        x, y = self.get_cell(plant.coords)
-        return plant in self.map[x][y]
 
     def run_state(self, num_years: int) -> None:
         """Run the simulation state for a given number of years.
