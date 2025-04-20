@@ -1,9 +1,34 @@
 from .asset_dist import Plant
 
+from neuroforgelab import AssetMesh, UniversalMesh
+
 from os import path
 
 MODEL_CACHE_PATH = "cache"
 EXTENSION = "glb"
+
+
+class TreeModelFactory:
+    """A factory for creating tree models."""
+
+    def __init__(self):
+        """Initialize the factory."""
+        self.models: dict[tuple[str, int], AssetMesh] = {}
+
+    def get_model(self, plant: Plant) -> AssetMesh:
+        """Get the model for a given plant.
+
+        Args:
+            plant (Plant): The plant to get the model for.
+
+        Returns:
+            str: The file path to the model.
+        """
+        key = (plant.species.name, plant.age)
+        if key not in self.models:
+            model_path = plant_to_model(plant)
+            self.models[key] = UniversalMesh(model_path)
+        return self.models[key]
 
 
 def plant_to_model(plant: Plant) -> str:

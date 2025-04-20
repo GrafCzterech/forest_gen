@@ -13,7 +13,7 @@ from trimesh import Trimesh
 
 from .heightmap import NOISE_FUNC, heightmap_to_mesh
 from .asset_dist import Simulation, Species
-from .assets import plant_to_model
+from .assets import TreeModelFactory
 
 
 class HeightmapTerrain(TerrainInstance):
@@ -76,10 +76,11 @@ class TreeSpec(AssetSpec):
         state = sim.new_state(self.tree_density)
         state.run_state(self.sim_duration)
         logging.debug("Simulation finished")
+        model_factory = TreeModelFactory()
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
-                UniversalMesh(plant_to_model(plant)),
+                model_factory.get_model(plant),
                 (plant.coords[0], terrain.raw(*plant.coords), plant.coords[1]),
                 (0.0, 0.0, 0.0, 0.0),
             )
