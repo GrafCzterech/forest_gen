@@ -48,7 +48,7 @@ class TreeSpec(AssetSpec):
     """Specification for generating trees in a forest scene."""
 
     tree_species = {
-        Species("Oak", 10, 0.01, radius=0.5),
+        Species("Oak", 10, 0.005, radius=2.5),
     }
 
     def __init__(self, sim_duration: int = 10, tree_density: float = 1.0):
