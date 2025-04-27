@@ -5,7 +5,7 @@ from neuroforgelab import AssetMesh, UniversalMesh
 from os import path
 
 MODEL_CACHE_PATH = "cache"
-EXTENSION = "glb"
+EXTENSION = "usd"
 
 
 class TreeModelFactory:
