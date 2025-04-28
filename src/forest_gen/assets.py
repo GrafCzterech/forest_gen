@@ -5,7 +5,7 @@ from neuroforgelab import AssetMesh, UniversalMesh
 from os import path
 
 MODEL_CACHE_PATH = "cache"
-EXTENSION = "glb"
+EXTENSION = "usd"
 
 
 class TreeModelFactory:
@@ -15,7 +15,7 @@ class TreeModelFactory:
         """Initialize the factory."""
         self.models: dict[tuple[str, int], AssetMesh] = {}
 
-    def get_model(self, plant: Plant) -> AssetMesh:
+    def get_model(self, plant: Plant) -> str:
         """Get the model for a given plant.
 
         Args:
@@ -28,7 +28,7 @@ class TreeModelFactory:
         if key not in self.models:
             model_path = plant_to_model(plant)
             self.models[key] = UniversalMesh(model_path)
-        return self.models[key]
+        return model_path
 
 
 def plant_to_model(plant: Plant) -> str:
