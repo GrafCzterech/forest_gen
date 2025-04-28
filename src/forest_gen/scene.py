@@ -13,7 +13,7 @@ from trimesh import Trimesh
 
 from .heightmap import NOISE_FUNC, heightmap_to_mesh
 from .asset_dist import Simulation, Species
-from .assets import TreeModelFactory
+from .assets import TreeModelFactory, plant_to_model
 
 
 class HeightmapTerrain(TerrainInstance):
@@ -81,6 +81,7 @@ class TreeSpec(AssetSpec):
             self.create_instance(
                 f"{plant.species.name}_{i}",
                 model_factory.get_model(plant),
+                plant_to_model(plant),
                 (plant.coords[0], terrain.raw(*plant.coords), plant.coords[1]),
                 (0.0, 0.0, 0.0, 0.0),
             )

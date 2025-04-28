@@ -15,7 +15,7 @@ class TreeModelFactory:
         """Initialize the factory."""
         self.models: dict[tuple[str, int], AssetMesh] = {}
 
-    def get_model(self, plant: Plant) -> str:
+    def get_model(self, plant: Plant) -> AssetMesh:
         """Get the model for a given plant.
 
         Args:
@@ -28,7 +28,7 @@ class TreeModelFactory:
         if key not in self.models:
             model_path = plant_to_model(plant)
             self.models[key] = UniversalMesh(model_path)
-        return model_path
+        return self.models[key]
 
 
 def plant_to_model(plant: Plant) -> str:
