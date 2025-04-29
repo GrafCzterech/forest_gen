@@ -25,5 +25,7 @@ class TreeModelFactory:
         """
         key = (plant.species.name, plant.age)
         if key not in self.models:
-            self.models[key] = DynamicMesh(trimesh.creation.capsule())
+            self.models[key] = DynamicMesh(
+                trimesh.creation.capsule(height=plant.age)
+            )
         return self.models[key]

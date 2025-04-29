@@ -76,11 +76,16 @@ class TreeSpec(AssetSpec):
         state.run_state(self.sim_duration)
         logging.debug("Simulation finished")
         model_factory = TreeModelFactory()
+        off = (terrain.size[0] / 2, terrain.size[1] / 2)
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
                 model_factory.get_model(plant),
-                (plant.coords[0], terrain.raw(*plant.coords), plant.coords[1]),
+                (
+                    plant.coords[0] - off[0],
+                    terrain.raw(*plant.coords),
+                    plant.coords[1] - off[1],
+                ),
                 (0.0, 0.0, 0.0, 0.0),
             )
             for i, plant in enumerate(state)
