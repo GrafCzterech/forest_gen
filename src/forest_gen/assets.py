@@ -1,8 +1,7 @@
 from .asset_dist import Plant
 
-from neuroforgelab import AssetMesh, UniversalMesh
-
-from os import path
+from neuroforgelab import AssetMesh, DynamicMesh
+import trimesh
 
 MODEL_CACHE_PATH = "cache"
 EXTENSION = "usd"
@@ -26,25 +25,5 @@ class TreeModelFactory:
         """
         key = (plant.species.name, plant.age)
         if key not in self.models:
-            model_path = plant_to_model(plant)
-            self.models[key] = UniversalMesh(model_path)
+            self.models[key] = DynamicMesh(trimesh.creation.capsule())
         return self.models[key]
-
-
-def plant_to_model(plant: Plant) -> str:
-    """Convert a plant to a model file path.
-
-    Args:
-        plant (Plant): The plant to convert.
-
-    Returns:
-        str: The file path to the model.
-    """
-    model_path = path.join(
-        MODEL_CACHE_PATH, f"{plant.species.name}_{plant.age}.{EXTENSION}"
-    )
-    if not path.exists(model_path):
-        raise FileNotFoundError(
-            f"Model file {path.realpath(model_path)} does not exist. Please generate the model first."
-        )
-    return model_path
