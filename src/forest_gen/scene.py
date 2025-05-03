@@ -86,7 +86,7 @@ class TreeSpec(AssetSpec):
                     terrain.raw(*plant.coords),
                     plant.coords[1] - off[1],
                 ),
-                (0.0, 0.0, 0.0, 0.0),
+                (0.70711, 0.70711, 0.0, 0.0),
             )
             for i, plant in enumerate(state)
         ]

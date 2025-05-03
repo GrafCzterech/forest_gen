@@ -1,10 +1,10 @@
 from .asset_dist import Plant
 
-from neuroforgelab import AssetMesh, DynamicMesh
+from neuroforgelab import AssetMesh, USDMesh, DynamicMesh
 import trimesh
 
 MODEL_CACHE_PATH = "cache"
-EXTENSION = "usd"
+EXTENSION = "glb"
 
 
 class TreeModelFactory:
@@ -21,11 +21,11 @@ class TreeModelFactory:
             plant (Plant): The plant to get the model for.
 
         Returns:
-            str: The file path to the model.
+            AssetMesh: Mesh of loaded asset.
         """
         key = (plant.species.name, plant.age)
         if key not in self.models:
-            self.models[key] = DynamicMesh(
-                trimesh.creation.capsule(height=plant.age)
+            self.models[key] = USDMesh(
+                f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}"
             )
         return self.models[key]
