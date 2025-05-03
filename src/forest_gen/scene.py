@@ -34,7 +34,7 @@ class ForestGenSpec(SceneSpec):
         self.add_asset(TreeSpec())
 
     def generate(self) -> HeightmapTerrain:
-
+        
         return HeightmapTerrain(
             heightmap_to_mesh(NOISE_FUNC, int(self.size[0])),
             (0.0, 0.0, 0.0),
