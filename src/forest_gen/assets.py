@@ -1,7 +1,6 @@
 from .asset_dist import Plant
 
 from neuroforgelab import AssetMesh, USDMesh, DynamicMesh
-import trimesh
 
 MODEL_CACHE_PATH = "cache"
 EXTENSION = "glb"

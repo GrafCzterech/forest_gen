@@ -23,8 +23,9 @@ class HeightmapTerrain(TerrainInstance):
         origin: tuple[float, float, float],
         size: tuple[float, float],
         raw: Callable[[float, float], float],
+        color: tuple[float, float, float] = (0.18, 0.18, 0.18),
     ):
-        super().__init__(mesh, origin, size)
+        super().__init__(mesh, origin, size, color)
         self.raw = raw
 
 
@@ -39,6 +40,7 @@ class ForestGenSpec(SceneSpec):
             (0.0, 0.0, 0.0),
             self.size,
             NOISE_FUNC,
+            (0.07, 0.42, 0.09),
         )
 
 
