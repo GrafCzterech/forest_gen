@@ -25,6 +25,7 @@ class TreeModelFactory:
         key = (plant.species.name, plant.age)
         if key not in self.models:
             self.models[key] = USDMesh(
-                f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}"
+                f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}",
+                scale=(0.1, 0.1, 0.1),
             )
         return self.models[key]

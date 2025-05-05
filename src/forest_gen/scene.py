@@ -1,4 +1,6 @@
 from typing import Callable
+from copy import deepcopy
+import random
 import logging
 
 from neuroforgelab import (
@@ -9,6 +11,8 @@ from neuroforgelab import (
 )
 
 from trimesh import Trimesh
+
+from isaaclab.assets import AssetBaseCfg
 
 from .heightmap import NOISE_FUNC, heightmap_to_mesh
 from .asset_dist import Simulation, Species
@@ -30,8 +34,15 @@ class HeightmapTerrain(TerrainInstance):
 
 
 class ForestGenSpec(SceneSpec):
-    def __init__(self, size: int = 256):
-        super().__init__(size=(size, size), robot=None, palette=[TreeSpec()])
+    def __init__(self, size: int = 256, robot: AssetBaseCfg | None = None):
+        if robot is not None:
+            robot = deepcopy(robot)
+            x = random.uniform(0, size)
+            y = random.uniform(0, size)
+            robot.init_state = robot.InitialStateCfg(
+                (x, y, NOISE_FUNC(x, y) + 2.0)
+            )
+        super().__init__(size=(size, size), robot=robot, palette=[TreeSpec()])
 
     def generate(self) -> HeightmapTerrain:
 
@@ -48,7 +59,7 @@ class TreeSpec(AssetSpec):
     """Specification for generating trees in a forest scene."""
 
     tree_species = {
-        Species("Oak", 10, 0.005, radius=2.5),
+        Species("Oak", 10, 0.005, radius=3.5),
     }
 
     def __init__(self, sim_duration: int = 10, tree_density: float = 1.0):
@@ -77,16 +88,11 @@ class TreeSpec(AssetSpec):
         state.run_state(self.sim_duration)
         logging.debug("Simulation finished")
         model_factory = TreeModelFactory()
-        off = (terrain.size[0] / 2, terrain.size[1] / 2)
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
                 model_factory.get_model(plant),
-                (
-                    plant.coords[0] - off[0],
-                    terrain.raw(*plant.coords),
-                    plant.coords[1] - off[1],
-                ),
+                (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)),
                 (0.70711, 0.70711, 0.0, 0.0),
                 {"color": "green"},
             )
