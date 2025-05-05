@@ -30,11 +30,10 @@ class HeightmapTerrain(TerrainInstance):
 
 class ForestGenSpec(SceneSpec):
     def __init__(self, size: int = 256):
-        super().__init__(size=(size, size), robot=None, palette=[])
-        self.add_asset(TreeSpec())
+        super().__init__(size=(size, size), robot=None, palette=[TreeSpec()])
 
     def generate(self) -> HeightmapTerrain:
-        
+
         return HeightmapTerrain(
             heightmap_to_mesh(NOISE_FUNC, int(self.size[0])),
             (0.0, 0.0, 0.0),
@@ -87,6 +86,7 @@ class TreeSpec(AssetSpec):
                     plant.coords[1] - off[1],
                 ),
                 (0.70711, 0.70711, 0.0, 0.0),
+                {"color": "green"},
             )
             for i, plant in enumerate(state)
         ]
