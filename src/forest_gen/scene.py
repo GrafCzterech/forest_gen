@@ -1,7 +1,9 @@
 from typing import Callable
 from copy import deepcopy
 import random
-import logging
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 from neuroforgelab import (
     SceneSpec,
@@ -27,9 +29,8 @@ class HeightmapTerrain(TerrainInstance):
         origin: tuple[float, float, float],
         size: tuple[float, float],
         raw: Callable[[float, float], float],
-        color: tuple[float, float, float] = (0.18, 0.18, 0.18),
     ):
-        super().__init__(mesh, origin, size, color)
+        super().__init__(mesh, origin, size)
         self.raw = raw
 
 
@@ -42,6 +43,7 @@ class ForestGenSpec(SceneSpec):
             robot.init_state = robot.InitialStateCfg(
                 (x, y, NOISE_FUNC(x, y) + 2.0)
             )
+            logger.debug(f"Robot initial pos: {robot.init_state.pos}")
         super().__init__(size=(size, size), robot=robot, palette=[TreeSpec()])
 
     def generate(self) -> HeightmapTerrain:
@@ -51,7 +53,6 @@ class ForestGenSpec(SceneSpec):
             (0.0, 0.0, 0.0),
             self.size,
             NOISE_FUNC,
-            (0.07, 0.42, 0.09),
         )
 
 
@@ -82,11 +83,11 @@ class TreeSpec(AssetSpec):
         Returns:
             list[AssetInstance]: A list of generated tree asset instances.
         """
-        logging.debug("Starting simulation")
+        logger.debug("Starting simulation")
         sim = Simulation(terrain.size, {self.name: self.tree_species})
         state = sim.new_state(self.tree_density)
         state.run_state(self.sim_duration)
-        logging.debug("Simulation finished")
+        logger.debug("Simulation finished")
         model_factory = TreeModelFactory()
         return [
             self.create_instance(
@@ -94,7 +95,7 @@ class TreeSpec(AssetSpec):
                 model_factory.get_model(plant),
                 (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)),
                 (0.70711, 0.70711, 0.0, 0.0),
-                {"color": "green"},
+                {"color": "green", "species": plant.species.name},
             )
             for i, plant in enumerate(state)
         ]

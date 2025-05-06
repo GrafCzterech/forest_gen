@@ -1,8 +1,10 @@
 from typing import Iterable
-import logging
 from itertools import chain
 import math
 from copy import copy
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 from .definitions import Species, Plant
 
@@ -98,7 +100,7 @@ class SimulationState:
             num_years (int): Number of years to run the simulation state.
         """
         for year in range(num_years):
-            logging.debug(f"Year {year + 1}/{num_years}")
+            logger.debug(f"Year {year + 1}/{num_years}")
             sum_a = 0
             pop_counter: dict[Species, int] = {}
             for plant in self:

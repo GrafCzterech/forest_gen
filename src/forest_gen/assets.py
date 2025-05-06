@@ -1,3 +1,7 @@
+from logging import getLogger
+
+logger = getLogger(__name__)
+
 from .asset_dist import Plant
 
 from neuroforgelab import AssetMesh, USDMesh, DynamicMesh
@@ -24,6 +28,9 @@ class TreeModelFactory:
         """
         key = (plant.species.name, plant.age)
         if key not in self.models:
+            logger.debug(
+                f"Loading model for {plant.species.name} age {plant.age}"
+            )
             self.models[key] = USDMesh(
                 f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}",
                 scale=(0.1, 0.1, 0.1),
