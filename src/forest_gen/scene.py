@@ -16,16 +16,31 @@ from trimesh import Trimesh
 
 from isaaclab.assets import AssetBaseCfg
 
-from .heightmap import NOISE_FUNC, heightmap_to_mesh
+from .heightmap import NOISE_FUNC, heightmap_to_meshes, normalized_noise2
 from .asset_dist import Simulation, Species
 from .assets import TreeModelFactory
+
+
+def classify_terrain(x: float, y: float) -> str:
+    """Classify the terrain based on the x and y coordinates.
+
+    Args:
+        x (float): The x coordinate.
+        y (float): The y coordinate.
+
+    Returns:
+        str: The classification of the terrain.
+    """
+    if normalized_noise2(x, y) > 0.5:
+        return "forest"
+    return "plain"
 
 
 class HeightmapTerrain(TerrainInstance):
 
     def __init__(
         self,
-        mesh: Trimesh,
+        mesh: list[tuple[Trimesh, list[tuple[str, str]]]],
         origin: tuple[float, float, float],
         size: tuple[float, float],
         raw: Callable[[float, float], float],
@@ -49,7 +64,9 @@ class ForestGenSpec(SceneSpec):
     def generate(self) -> HeightmapTerrain:
 
         return HeightmapTerrain(
-            heightmap_to_mesh(NOISE_FUNC, int(self.size[0])),
+            heightmap_to_meshes(
+                NOISE_FUNC, int(self.size[0]), classifier=classify_terrain
+            ),
             (0.0, 0.0, 0.0),
             self.size,
             NOISE_FUNC,
