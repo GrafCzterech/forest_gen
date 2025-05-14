@@ -46,17 +46,20 @@ class SimulationState:
         y = int(coords[1] / self.cell_height)
         return x, y
 
-    def get_nearby(self, plant: Plant) -> chain[Plant]:
+    def get_nearby(
+        self, coords: tuple[float, float], radius: float
+    ) -> chain[Plant]:
         """Get the plants in a radius around the given coordinates.
 
         Args:
-            plant (Plant): The plant to find neighbors for.
+            coords (tuple[float, float]): Coordinates of the plant.
+            radius (float): Radius to search for plants.
 
         Returns:
             chain[Plant]: Plants in the radius around the given coordinates.
         """
-        x, y = self.get_cell(plant.coords)
-        radius = math.ceil(plant.species.radius / self.cell_width)
+        x, y = self.get_cell(coords)
+        radius = math.ceil(radius / self.cell_width)
         return chain.from_iterable(
             self.map[i][j]
             for i in range(
@@ -66,6 +69,17 @@ class SimulationState:
                 max(0, y - radius), min(self.grid_height - 1, y + radius) + 1
             )
         )
+
+    def get_nearby_plant(self, plant: Plant) -> chain[Plant]:
+        """Get the plants in a radius around the given plant.
+
+        Args:
+            plant (Plant): Plant to search for.
+
+        Returns:
+            chain[Plant]: Plants in the radius around the given plant.
+        """
+        return self.get_nearby(plant.coords, plant.species.radius)
 
     def remove(self, plant: Plant) -> None:
         """Remove a plant from the simulation state.
@@ -126,7 +140,7 @@ class SimulationState:
                         continue
                     # check if the plant is viable
                     viable = True
-                    for other_plant in tuple(self.get_nearby(new_plant)):
+                    for other_plant in tuple(self.get_nearby_plant(new_plant)):
                         # faster than max()
                         if (
                             new_plant.species.radius

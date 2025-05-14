@@ -2,6 +2,7 @@ from typing import Callable
 from copy import deepcopy
 import random
 from logging import getLogger
+import math
 
 logger = getLogger(__name__)
 
@@ -51,12 +52,14 @@ class HeightmapTerrain(TerrainInstance):
 
 class ForestGenSpec(SceneSpec):
     def __init__(self, size: int = 256, robot: AssetBaseCfg | None = None):
+        self.start_point = (0.0, 0.0)
         if robot is not None:
             robot = deepcopy(robot)
             x = random.uniform(0, size)
             y = random.uniform(0, size)
+            self.start_point = (x, y)
             robot.init_state = robot.InitialStateCfg(
-                (x, y, NOISE_FUNC(x, y) + 2.0)
+                (x, y, NOISE_FUNC(x, y) + 1.0)
             )
             logger.debug(f"Robot initial pos: {robot.init_state.pos}")
         super().__init__(size=(size, size), robot=robot, palette=[TreeSpec()])
@@ -67,7 +70,7 @@ class ForestGenSpec(SceneSpec):
             heightmap_to_meshes(
                 NOISE_FUNC, int(self.size[0]), classifier=classify_terrain
             ),
-            (0.0, 0.0, 0.0),
+            (self.start_point[0], self.start_point[1], 0.0),
             self.size,
             NOISE_FUNC,
         )
@@ -106,6 +109,7 @@ class TreeSpec(AssetSpec):
         state.run_state(self.sim_duration)
         logger.debug("Simulation finished")
         model_factory = TreeModelFactory()
+        origin_2d = (terrain.origin[0], terrain.origin[1])
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
@@ -115,4 +119,5 @@ class TreeSpec(AssetSpec):
                 {"color": "green", "species": plant.species.name},
             )
             for i, plant in enumerate(state)
+            if math.dist(plant.coords, origin_2d) > 10.0
         ]
