@@ -6,6 +6,8 @@ from scipy.stats.qmc import PoissonDisk
 from .definitions import Species, Plant
 from .state import SimulationState
 
+# this file mainly implments the initial state of the simulation
+
 
 class Simulation:
     """A simulation of a forest used to generate realistic plant positions."""

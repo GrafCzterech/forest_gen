@@ -6,6 +6,9 @@ from numpy.polynomial import Polynomial
 
 Func: TypeAlias = Callable[..., float]
 
+# this entire module is a utility for the terrain generation
+# YOU DONT NEED TO LOOK AT THIS
+
 
 def call_func(
     func: Func,

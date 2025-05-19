@@ -3,6 +3,9 @@ from collections.abc import Callable
 import numpy as np
 from trimesh import Trimesh
 
+# this module provides functions to convert a heightmap function into a 3D mesh,
+# with our own spin to it
+
 
 def generate_points(
     heightmap: Callable[[float, float], float], size: int, step: float = 1.0
@@ -62,6 +65,7 @@ def heightmap_to_mesh(
     return Trimesh(vertices=vertices, faces=faces)
 
 
+# important function for terrain semantic class support
 def heightmap_to_meshes(
     heightmap: Callable[[float, float], float],
     size: int,

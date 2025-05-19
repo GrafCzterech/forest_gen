@@ -3,6 +3,8 @@ import numpy as np
 
 from .func_stack import MultiLayerFunc
 
+# fasade for the heightmap module
+
 
 def normalized_noise2(x: float, y: float) -> float:
     """A wrapper for the noise2 function from opensimplex.

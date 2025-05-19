@@ -5,8 +5,12 @@ import math
 
 from opensimplex import OpenSimplex
 
+# the whole algorithm utilizes classes laid out here
 
+
+@dataclass
 class ViabilityMap:
+    """A function that classifies the viability of the plant in the given location."""
 
     def __init__(self, eps: float = 0.1):
 
