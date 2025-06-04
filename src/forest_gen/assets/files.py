@@ -2,7 +2,7 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-from .asset_dist import Plant
+from ..asset_dist import Plant
 
 from neuroforgelab import AssetMesh, USDMesh
 
