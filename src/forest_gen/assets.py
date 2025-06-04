@@ -1,17 +1,16 @@
 from logging import getLogger
-import os
 
 logger = getLogger(__name__)
 
 from .asset_dist import Plant
 
-from neuroforgelab import AssetMesh, USDMesh, DynamicMesh
+from neuroforgelab import AssetMesh, USDMesh
 
 # this file handles how models are generated. The idea is to create an abstract
 # fasade that won't change if we choose to load or generate assets
 
-MODEL_CACHE_PATH = os.path.abspath("cache")
-EXTENSION = "usdc"
+MODEL_CACHE_PATH = "cache"
+EXTENSION = "glb"
 
 
 # verbose? yeah but necessary cuz CACHING

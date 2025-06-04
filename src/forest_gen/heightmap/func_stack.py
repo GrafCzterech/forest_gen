@@ -38,7 +38,8 @@ def call_func(
         value = func(*args)
 
     if out_transform is not None:
-        value: float = out_transform(value).astype(float)
+        value: float = float(out_transform(value))
+
     return value
 
 
