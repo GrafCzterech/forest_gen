@@ -9,7 +9,7 @@ from neuroforgelab import AssetMesh, USDMesh
 # this file handles how models are generated. The idea is to create an abstract
 # fasade that won't change if we choose to load or generate assets
 
-MODEL_CACHE_PATH = os.path.abspath("cache")
+MODEL_CACHE_PATH = os.path.abspath("assets")
 EXTENSION = "usd"
 
 
