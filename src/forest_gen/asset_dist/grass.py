@@ -1,6 +1,6 @@
 from random import random
 from scipy.stats import qmc
-from heightmap import normalized_noise2
+from ..heightmap import normalized_noise2
 
 def grass_points(width: int, height: int, r: float):
     """Returns a list of points representing simple grass distribution over a given area.
