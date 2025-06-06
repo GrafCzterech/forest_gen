@@ -20,7 +20,7 @@ from isaaclab.assets import AssetBaseCfg
 # this is sort of a fasade file for the whole module
 
 from .heightmap import NOISE_FUNC, heightmap_to_meshes, normalized_noise2
-from .asset_dist import Simulation, Species
+from .asset_dist import Simulation, Species, grass_distribution
 from .assets import TreeModelFactory
 
 # i have heard many a voice from vile dissidents that showcase their weakness
@@ -87,7 +87,7 @@ class ForestGenSpec(SceneSpec):
             logger.debug(f"Robot initial pos: {robot.init_state.pos}")
 
         # here the assets are hooked up to the scene
-        super().__init__(size=(size, size), robot=robot, palette=[TreeSpec()])
+        super().__init__(size=(size, size), robot=robot, palette=[TreeSpec(), GrassSpec()])
 
     def generate(self) -> HeightmapTerrain:
 
@@ -152,4 +152,43 @@ class TreeSpec(AssetSpec):
             )
             for i, plant in enumerate(state)
             if math.dist(plant.coords, origin_2d) > 10.0
+        ]
+    
+class GrassSpec(AssetSpec):
+    """Specification for generating grass in a forest scene."""
+
+    
+    
+    def __init__(self):
+        """Construct a GrassSpec.
+
+        """
+        super().__init__("Grass")
+
+    def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
+        """Generate a list of grass instances based on the given terrain.
+
+        Args:
+            terrain (HeightmapTerrain): The terrain instance on which to generate grass.
+
+        Returns:
+            list[AssetInstance]: A list of generated grass asset instances.
+        """
+        # do the simulation
+        logger.debug("Generating grass")
+        grass = grass_distribution(terrain.size[0], terrain.size[1])
+        logger.debug("Generation finished")
+
+        # then we create the tree instances
+        model_factory = TreeModelFactory()
+        origin_2d = (terrain.origin[0], terrain.origin[1])
+        return [
+            self.create_instance(
+                f"Grass_{i}",
+                model_factory.get_model_by_name("Grass", 1),
+                (plant[0], plant[1], terrain.raw(*plant)),
+                (0.70711, 0.70711, 0.0, 0.0),
+                {"color": "blue", "species": "Grass"},
+            )
+            for i, plant in enumerate(grass)
         ]

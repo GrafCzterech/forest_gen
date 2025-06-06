@@ -37,11 +37,35 @@ class TreeModelFactory:
         if key not in self.models:
             # MAYBE remove this debug statement, its a pain in the ass
             logger.debug(
-                # f"Loading model for {plant.species.name} age {plant.age}"
-                f"Loading model for anime dziewczynka age {plant.age}"
+                f"Loading model for {plant.species.name} age {plant.age}"
+                # f"Loading model for anime dziewczynka age {plant.age}"
             )
             self.models[key] = UniversalMesh(
                 f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}",
+                #f"{MODEL_CACHE_PATH}/Test_1.{EXTENSION}",
+                scale=(self.scale, self.scale, self.scale),
+            )
+        return self.models[key]
+    
+    def get_model_by_name(self, name: str, age: int) -> AssetMesh:
+        """Get the model for a given plant.
+
+        Args:
+            name (str): The name of the plant species.
+            age (int): The age of the plant.
+        Returns:
+            AssetMesh: Mesh of loaded asset named "name_age".
+        """
+
+        key = (name, age)
+        if key not in self.models:
+            # MAYBE remove this debug statement, its a pain in the ass
+            logger.debug(
+                f"Loading model for {name} age {age}"
+                # f"Loading model for anime dziewczynka age {plant.age}"
+            )
+            self.models[key] = UniversalMesh(
+                f"{MODEL_CACHE_PATH}/{name}_{age}.{EXTENSION}",
                 #f"{MODEL_CACHE_PATH}/Test_1.{EXTENSION}",
                 scale=(self.scale, self.scale, self.scale),
             )

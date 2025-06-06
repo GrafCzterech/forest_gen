@@ -1,5 +1,5 @@
-from random import random
 from scipy.stats import qmc
+
 from ..heightmap import normalized_noise2
 
 def grass_points(width: int, height: int, r: float):
@@ -15,7 +15,7 @@ def grass_points(width: int, height: int, r: float):
     """
     grass_sampler = qmc.PoissonDisk(2, radius=r, rng=1, ncandidates=30, l_bounds=[0, 0], u_bounds=[width, height])
     grass = grass_sampler.random(n=int(width * height / (r * r)))
-    return grass
+    return [tuple(point) for point in grass.tolist()]
 
 def grass_distribution(width: int, height: int) -> list:
     """Distribute grass points based on terrain classification.
@@ -27,8 +27,8 @@ def grass_distribution(width: int, height: int) -> list:
     Returns:
         list: List of distributed grass points.
     """
-    grass_plain = grass_points(width, height, 2)
-    grass_forest = grass_points(width, height, 5)
+    grass_plain = grass_points(width, height, 3)
+    grass_forest = grass_points(width, height, 3)
 
     grass_end = []
     for item in grass_plain:
