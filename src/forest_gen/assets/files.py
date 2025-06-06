@@ -4,13 +4,14 @@ logger = getLogger(__name__)
 
 from ..asset_dist import Plant
 import os
-from neuroforgelab import AssetMesh, USDMesh
+from neuroforgelab import AssetMesh, UniversalMesh
+# USDMesh is weird and doesn't work in Rl env
 
 # this file handles how models are generated. The idea is to create an abstract
 # fasade that won't change if we choose to load or generate assets
 
 MODEL_CACHE_PATH = os.path.abspath("assets")
-EXTENSION = "usd"
+EXTENSION = "glb"
 
 
 # verbose? yeah but necessary cuz CACHING
@@ -36,10 +37,12 @@ class TreeModelFactory:
         if key not in self.models:
             # MAYBE remove this debug statement, its a pain in the ass
             logger.debug(
-                f"Loading model for {plant.species.name} age {plant.age}"
+                # f"Loading model for {plant.species.name} age {plant.age}"
+                f"Loading model for anime dziewczynka age {plant.age}"
             )
-            self.models[key] = USDMesh(
+            self.models[key] = UniversalMesh(
                 f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}",
+                #f"{MODEL_CACHE_PATH}/Test_1.{EXTENSION}",
                 scale=(self.scale, self.scale, self.scale),
             )
         return self.models[key]

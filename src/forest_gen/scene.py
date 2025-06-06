@@ -78,9 +78,8 @@ class ForestGenSpec(SceneSpec):
         self.start_point = (0.0, 0.0)
         if robot is not None:
             robot = deepcopy(robot)
-            sz = size / 2
-            x = random.uniform(-sz, sz)
-            y = random.uniform(-sz, sz)
+            x = random.uniform(0, size)
+            y = random.uniform(0, size)
             self.start_point = (x, y)
             robot.init_state = robot.InitialStateCfg(
                 (x, y, NOISE_FUNC(x, y) + 1.0)
