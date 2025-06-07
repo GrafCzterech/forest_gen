@@ -1,3 +1,5 @@
+"""Submodule providing asset distribution generation"""
+
 from .sim import Simulation
 from .state import SimulationState
 from .definitions import Species, Plant

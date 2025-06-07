@@ -1,3 +1,5 @@
+"""Submodule providing various heightmap-related functions."""
+
 from .terrain import NOISE_FUNC, normalized_noise2
 from .mesh import heightmap_to_mesh, heightmap_to_meshes
 

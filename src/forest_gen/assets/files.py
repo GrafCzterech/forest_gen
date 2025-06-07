@@ -41,6 +41,7 @@ class PlantModelFactory:
         Args:
             name (str): The name of the plant species.
             age (int): The age of the plant.
+
         Returns:
             AssetMesh: Mesh of loaded asset named "name_age".
         """

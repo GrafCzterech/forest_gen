@@ -70,10 +70,15 @@ class HeightmapTerrain(TerrainInstance):
 
 
 class ForestGenSpec(SceneSpec):
-    """The one class that specifies how the scene is generated.
-    Size and robot go in, and a scene comes out."""
+    """A specification for generating a forest scene."""
 
     def __init__(self, size: int = 256, robot: AssetBaseCfg | None = None):
+        """Initialize the forest generation specification.
+
+        Args:
+            size (int): The size of the terrain.
+            robot (AssetBaseCfg | None): The robot configuration.
+        """
         # determine the start position and save it
         self.start_point = (0.0, 0.0)
         if robot is not None:
