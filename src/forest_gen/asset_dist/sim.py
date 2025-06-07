@@ -12,9 +12,7 @@ from .state import SimulationState
 class Simulation:
     """A simulation of a forest used to generate realistic plant positions."""
 
-    def __init__(
-        self, size: tuple[float, float], species: dict[str, set[Species]]
-    ):
+    def __init__(self, size: tuple[float, float], species: dict[str, set[Species]]):
         """Initialize the simulation.
 
         Args:
@@ -50,12 +48,7 @@ class Simulation:
         points: list[list[float]] = self.disk.fill_space().tolist()
         self.disk.reset()
         ns = [
-            (
-                scene_density
-                * species.species_density
-                * self.size[0]
-                * self.size[1]
-            )
+            (scene_density * species.species_density * self.size[0] * self.size[1])
             / len(type_species)
             for type_species in self.species.values()
             for species in type_species

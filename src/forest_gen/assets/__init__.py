@@ -1,5 +1,3 @@
-from .files import TreeModelFactory
+from .files import PlantModelFactory
 
-__all__ = [
-    "TreeModelFactory"
-]
+__all__ = ["PlantModelFactory"]

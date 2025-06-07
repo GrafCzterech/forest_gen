@@ -1,6 +1,7 @@
-from scipy.stats import qmc
+from scipy.stats.qmc import PoissonDisk
 
 from ..heightmap import normalized_noise2
+
 
 def grass_points(width: int, height: int, r: float):
     """Returns a list of points representing simple grass distribution over a given area.
@@ -13,9 +14,12 @@ def grass_points(width: int, height: int, r: float):
     Returns:
         grass (ndarray): An array of points representing grass distribution.
     """
-    grass_sampler = qmc.PoissonDisk(2, radius=r, rng=1, ncandidates=30, l_bounds=[0, 0], u_bounds=[width, height])
+    grass_sampler = PoissonDisk(
+        2, radius=r, rng=1, ncandidates=30, l_bounds=[0, 0], u_bounds=[width, height]
+    )
     grass = grass_sampler.random(n=int(width * height / (r * r)))
     return [tuple(point) for point in grass.tolist()]
+
 
 def grass_distribution(width: int, height: int) -> list:
     """Distribute grass points based on terrain classification.

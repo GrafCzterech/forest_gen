@@ -52,9 +52,7 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(
-                    dist(a.coords, b.coords), a.species.radius
-                )
+                self.assertGreaterEqual(dist(a.coords, b.coords), a.species.radius)
         self.assertTrue(not_empty)
 
     def test_post_sim_state(self):
@@ -68,9 +66,7 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(
-                    dist(a.coords, b.coords), a.species.radius
-                )
+                self.assertGreaterEqual(dist(a.coords, b.coords), a.species.radius)
         self.assertTrue(not_empty)
 
 

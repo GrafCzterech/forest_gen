@@ -9,6 +9,7 @@ from openalea.weberpenn.tree_client import TreeParameter
 
 # https://github.com/openalea/weberpenn/blob/88fc9c3f26c558ad77ca22ce0b0390ba0d7ee32a/src/openalea/weberpenn/tree_client.py#L874
 
+
 def generate_tree(
     shape_id: int = 2,
     base_size: float = 0.05,
@@ -51,7 +52,7 @@ def generate_tree(
     leaf_scale_x: float = 0.66,
 ) -> None:
 
-# https://github.com/openalea/weberpenn/blob/88fc9c3f26c558ad77ca22ce0b0390ba0d7ee32a/src/openalea/weberpenn/wralea/trunk_parameters.py#L208
+    # https://github.com/openalea/weberpenn/blob/88fc9c3f26c558ad77ca22ce0b0390ba0d7ee32a/src/openalea/weberpenn/wralea/trunk_parameters.py#L208
 
     sim = weber_penn(
         parameters=TreeParameter(
@@ -87,7 +88,6 @@ def generate_tree(
         raise ValueError("Unexpected number of simulations")
 
     sim[0].save("tree.obj")
-
 
 
 generate_tree()

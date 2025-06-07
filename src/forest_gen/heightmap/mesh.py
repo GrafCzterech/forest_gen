@@ -100,9 +100,7 @@ def heightmap_to_meshes(
 
                 faces = classes.get(class1, [])
 
-                faces.append(
-                    (i * size + j, i * size + (j + 1), (i + 1) * size + j)
-                )
+                faces.append((i * size + j, i * size + (j + 1), (i + 1) * size + j))
                 faces.append(
                     (
                         (i + 1) * size + j,

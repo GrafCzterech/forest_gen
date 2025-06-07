@@ -5,6 +5,7 @@ logger = getLogger(__name__)
 from ..asset_dist import Plant
 import os
 from neuroforgelab import AssetMesh, UniversalMesh
+
 # USDMesh is weird and doesn't work in Rl env
 
 # this file handles how models are generated. The idea is to create an abstract
@@ -15,8 +16,8 @@ EXTENSION = "glb"
 
 
 # verbose? yeah but necessary cuz CACHING
-class TreeModelFactory:
-    """A factory for creating tree models."""
+class PlantModelFactory:
+    """A factory for creating plant models."""
 
     def __init__(self, scale: float = 0.1):
         """Initialize the factory."""
@@ -32,21 +33,8 @@ class TreeModelFactory:
         Returns:
             AssetMesh: Mesh of loaded asset.
         """
+        return self.get_model_by_name(plant.species.name, plant.age)
 
-        key = (plant.species.name, plant.age)
-        if key not in self.models:
-            # MAYBE remove this debug statement, its a pain in the ass
-            logger.debug(
-                f"Loading model for {plant.species.name} age {plant.age}"
-                # f"Loading model for anime dziewczynka age {plant.age}"
-            )
-            self.models[key] = UniversalMesh(
-                f"{MODEL_CACHE_PATH}/{plant.species.name}_{plant.age}.{EXTENSION}",
-                #f"{MODEL_CACHE_PATH}/Test_1.{EXTENSION}",
-                scale=(self.scale, self.scale, self.scale),
-            )
-        return self.models[key]
-    
     def get_model_by_name(self, name: str, age: int) -> AssetMesh:
         """Get the model for a given plant.
 
@@ -60,13 +48,9 @@ class TreeModelFactory:
         key = (name, age)
         if key not in self.models:
             # MAYBE remove this debug statement, its a pain in the ass
-            logger.debug(
-                f"Loading model for {name} age {age}"
-                # f"Loading model for anime dziewczynka age {plant.age}"
-            )
+            logger.debug(f"Loading model for {name} age {age}")
             self.models[key] = UniversalMesh(
                 f"{MODEL_CACHE_PATH}/{name}_{age}.{EXTENSION}",
-                #f"{MODEL_CACHE_PATH}/Test_1.{EXTENSION}",
                 scale=(self.scale, self.scale, self.scale),
             )
         return self.models[key]

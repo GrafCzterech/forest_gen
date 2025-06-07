@@ -21,7 +21,7 @@ from isaaclab.assets import AssetBaseCfg
 
 from .heightmap import NOISE_FUNC, heightmap_to_meshes, normalized_noise2
 from .asset_dist import Simulation, Species, grass_distribution
-from .assets import TreeModelFactory
+from .assets import PlantModelFactory
 
 # i have heard many a voice from vile dissidents that showcase their weakness
 # and complain about how convoluted this file is. As such overt comments
@@ -87,7 +87,9 @@ class ForestGenSpec(SceneSpec):
             logger.debug(f"Robot initial pos: {robot.init_state.pos}")
 
         # here the assets are hooked up to the scene
-        super().__init__(size=(size, size), robot=robot, palette=[TreeSpec(), GrassSpec()])
+        super().__init__(
+            size=(size, size), robot=robot, palette=[TreeSpec(), GrassSpec()]
+        )
 
     def generate(self) -> HeightmapTerrain:
 
@@ -140,7 +142,7 @@ class TreeSpec(AssetSpec):
         logger.debug("Simulation finished")
 
         # then we create the tree instances
-        model_factory = TreeModelFactory()
+        model_factory = PlantModelFactory()
         origin_2d = (terrain.origin[0], terrain.origin[1])
         return [
             self.create_instance(
@@ -153,17 +155,14 @@ class TreeSpec(AssetSpec):
             for i, plant in enumerate(state)
             if math.dist(plant.coords, origin_2d) > 10.0
         ]
-    
+
+
 class GrassSpec(AssetSpec):
     """Specification for generating grass in a forest scene."""
 
-    
-    
     def __init__(self):
-        """Construct a GrassSpec.
-
-        """
-        super().__init__("Grass")
+        """Construct a GrassSpec."""
+        super().__init__("grass")
 
     def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
         """Generate a list of grass instances based on the given terrain.
@@ -176,12 +175,11 @@ class GrassSpec(AssetSpec):
         """
         # do the simulation
         logger.debug("Generating grass")
-        grass = grass_distribution(terrain.size[0], terrain.size[1])
+        grass = grass_distribution(int(terrain.size[0]), int(terrain.size[1]))
         logger.debug("Generation finished")
 
         # then we create the tree instances
-        model_factory = TreeModelFactory()
-        origin_2d = (terrain.origin[0], terrain.origin[1])
+        model_factory = PlantModelFactory()
         return [
             self.create_instance(
                 f"Grass_{i}",
