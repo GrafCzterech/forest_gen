@@ -27,7 +27,6 @@ def generate_traversability_map(
     resolution_factor: int = 2,
 ) -> Tuple[np.ndarray, np.ndarray]:
     high_res_size = size * resolution_factor
-    high_res_step = step / resolution_factor
 
     # WYŻSZA ROZDIZELCZOŚĆ
     x = y = np.linspace(0, size * step, high_res_size)
@@ -54,12 +53,16 @@ def generate_traversability_map(
         for i in range(high_res_size):
             for j in range(high_res_size):
                 px, py = X[i, j], Y[i, j]
-                indices = kdtree.query_ball_point([px, py], r=tree_influence_radius)
+                indices = kdtree.query_ball_point(
+                    [px, py], r=tree_influence_radius
+                )
                 if indices:
                     penalties = []
                     for idx in indices:
                         # Euklides
-                        d = np.hypot(px - tree_points[idx, 0], py - tree_points[idx, 1])
+                        d = np.hypot(
+                            px - tree_points[idx, 0], py - tree_points[idx, 1]
+                        )
                         # d = 0   --> penalty_value = tree_penalty (full penalty)
                         # d = tree_influence_radius --> penalty_value = tree_penalty * 0.3
                         penalty_value = tree_penalty * (

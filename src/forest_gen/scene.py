@@ -16,6 +16,7 @@ from neuroforgelab import (
 from trimesh import Trimesh
 
 from isaaclab.assets import AssetBaseCfg
+from isaaclab.sensors import SensorBaseCfg
 
 # this is sort of a fasade file for the whole module
 
@@ -72,7 +73,12 @@ class HeightmapTerrain(TerrainInstance):
 class ForestGenSpec(SceneSpec):
     """A specification for generating a forest scene."""
 
-    def __init__(self, size: int = 256, robot: AssetBaseCfg | None = None):
+    def __init__(
+        self,
+        size: int = 256,
+        robot: AssetBaseCfg | None = None,
+        sensors: dict[str, SensorBaseCfg] | None = None,
+    ):
         """Initialize the forest generation specification.
 
         Args:
@@ -93,7 +99,10 @@ class ForestGenSpec(SceneSpec):
 
         # here the assets are hooked up to the scene
         super().__init__(
-            size=(size, size), robot=robot, palette=[TreeSpec(), GrassSpec()]
+            size=(size, size),
+            robot=robot,
+            sensors=sensors,
+            palette=[TreeSpec(), GrassSpec()],
         )
 
     def generate(self) -> HeightmapTerrain:

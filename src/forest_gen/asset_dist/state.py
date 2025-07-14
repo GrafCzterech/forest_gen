@@ -48,7 +48,9 @@ class SimulationState:
         y = int(coords[1] / self.cell_height)
         return x, y
 
-    def get_nearby(self, coords: tuple[float, float], radius: float) -> chain[Plant]:
+    def get_nearby(
+        self, coords: tuple[float, float], radius: float
+    ) -> chain[Plant]:
         """Get the plants in a radius around the given coordinates.
 
         Args:
@@ -62,7 +64,9 @@ class SimulationState:
         radius = math.ceil(radius / self.cell_width)
         return chain.from_iterable(
             self.map[i][j]
-            for i in range(max(0, x - radius), min(self.grid_width - 1, x + radius) + 1)
+            for i in range(
+                max(0, x - radius), min(self.grid_width - 1, x + radius) + 1
+            )
             for j in range(
                 max(0, y - radius), min(self.grid_height - 1, y + radius) + 1
             )
@@ -140,7 +144,10 @@ class SimulationState:
                     viable = True
                     for other_plant in tuple(self.get_nearby_plant(new_plant)):
                         # faster than max()
-                        if new_plant.species.radius > other_plant.species.radius:
+                        if (
+                            new_plant.species.radius
+                            > other_plant.species.radius
+                        ):
                             max_radius = new_plant.species.radius
                         else:
                             max_radius = other_plant.species.radius
