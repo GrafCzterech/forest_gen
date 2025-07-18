@@ -1,8 +1,5 @@
 from typing import Callable
-from copy import deepcopy
-import random
 from logging import getLogger
-import math
 
 logger = getLogger(__name__)
 
@@ -14,9 +11,6 @@ from neuroforgelab import (
 )
 
 from trimesh import Trimesh
-
-from isaaclab.assets import AssetBaseCfg
-from isaaclab.sensors import SensorBaseCfg
 
 # this is sort of a fasade file for the whole module
 
@@ -76,8 +70,6 @@ class ForestGenSpec(SceneSpec):
     def __init__(
         self,
         size: int = 256,
-        robot: AssetBaseCfg | None = None,
-        sensors: dict[str, SensorBaseCfg] | None = None,
     ):
         """Initialize the forest generation specification.
 
@@ -85,23 +77,10 @@ class ForestGenSpec(SceneSpec):
             size (int): The size of the terrain.
             robot (AssetBaseCfg | None): The robot configuration.
         """
-        # determine the start position and save it
-        self.start_point = (0.0, 0.0)
-        if robot is not None:
-            robot = deepcopy(robot)
-            x = random.uniform(0, size)
-            y = random.uniform(0, size)
-            self.start_point = (x, y)
-            robot.init_state = robot.InitialStateCfg(
-                (x, y, NOISE_FUNC(x, y) + 1.0)
-            )
-            logger.debug(f"Robot initial pos: {robot.init_state.pos}")
 
         # here the assets are hooked up to the scene
         super().__init__(
             size=(size, size),
-            robot=robot,
-            sensors=sensors,
             palette=[TreeSpec(), GrassSpec()],
         )
 
@@ -113,7 +92,7 @@ class ForestGenSpec(SceneSpec):
             heightmap_to_meshes(
                 NOISE_FUNC, int(self.size[0]), classifier=classify_terrain
             ),
-            (self.start_point[0], self.start_point[1], 0.0),
+            (0.0, 0.0, NOISE_FUNC(0.0, 0.0)),
             self.size,
             NOISE_FUNC,
         )
@@ -124,7 +103,7 @@ class TreeSpec(AssetSpec):
     """Specification for generating trees in a forest scene."""
 
     tree_species = {
-        Species("Oak", 10, 0.005, radius=3.5),
+        Species("Oak", 10, 0.005, radius=5.0),
     }
     """List of tree species we want to generate."""
 
@@ -157,7 +136,6 @@ class TreeSpec(AssetSpec):
 
         # then we create the tree instances
         model_factory = PlantModelFactory()
-        origin_2d = (terrain.origin[0], terrain.origin[1])
         return [
             self.create_instance(
                 f"{plant.species.name}_{i}",
@@ -167,7 +145,6 @@ class TreeSpec(AssetSpec):
                 {"color": "green", "species": plant.species.name},
             )
             for i, plant in enumerate(state)
-            if math.dist(plant.coords, origin_2d) > 10.0
         ]
 
 
