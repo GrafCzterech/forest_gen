@@ -20,13 +20,13 @@ def generate_points(
     Returns:
         tuple[np.ndarray, np.ndarray, np.ndarray]: X, Y, Z coordinates of the mesh grid.
     """
-    x = y = np.linspace(0, size * step, size, retstep=False)
+    x = y = np.arange(0, size, step)
     X, Y = np.meshgrid(x, y)
 
     # Compute the heights
     Z = np.zeros_like(X)
-    for i in range(size):
-        for j in range(size):
+    for i in range(X.shape[0]):
+        for j in range(X.shape[1]):
             Z[i, j] = heightmap(X[i, j], Y[i, j])
     return X, Y, Z
 
@@ -49,14 +49,15 @@ def heightmap_to_mesh(
     vertices = np.c_[X.ravel(), Y.ravel(), Z.ravel()]
     faces = []
 
-    for i in range(size - 1):
-        for j in range(size - 1):
-            faces.append([i * size + j, i * size + (j + 1), (i + 1) * size + j])
+    rows, cols = X.shape  # Get the actual grid dimensions
+    for i in range(rows - 1):
+        for j in range(cols - 1):
+            faces.append((i * cols + j, i * cols + (j + 1), (i + 1) * cols + j))
             faces.append(
                 (
-                    (i + 1) * size + j,
-                    i * size + (j + 1),
-                    (i + 1) * size + (j + 1),
+                    (i + 1) * cols + j,
+                    i * cols + (j + 1),
+                    (i + 1) * cols + (j + 1),
                 )
             )
 
@@ -94,20 +95,21 @@ def heightmap_to_meshes(
 
         classes: dict[str, list[tuple[int, int, int]]] = {}
 
-        for i in range(size - 1):
-            for j in range(size - 1):
+        rows, cols = X.shape
+        for i in range(rows - 1):
+            for j in range(cols - 1):
                 class1 = classifier(X[i, j], Y[i, j])
 
                 faces = classes.get(class1, [])
 
                 faces.append(
-                    (i * size + j, i * size + (j + 1), (i + 1) * size + j)
+                    (i * cols + j, i * cols + (j + 1), (i + 1) * cols + j)
                 )
                 faces.append(
                     (
-                        (i + 1) * size + j,
-                        i * size + (j + 1),
-                        (i + 1) * size + (j + 1),
+                        (i + 1) * cols + j,
+                        i * cols + (j + 1),
+                        (i + 1) * cols + (j + 1),
                     )
                 )
 

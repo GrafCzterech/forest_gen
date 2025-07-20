@@ -1,5 +1,6 @@
 from typing import Callable
 from logging import getLogger
+import math
 
 logger = getLogger(__name__)
 
@@ -35,8 +36,11 @@ def classify_terrain(x: float, y: float) -> str:
     Returns:
         str: The classification of the terrain.
     """
-    if normalized_noise2(x, y) > 0.5:
+    val = normalized_noise2(x, y)
+    if val > 0.5:
         return "forest"
+    elif val > 0.1:
+        return "grass"
     return "plain"
 
 
@@ -64,6 +68,9 @@ class HeightmapTerrain(TerrainInstance):
         self.raw = raw
 
 
+BORDER_MARGIN = 5.0
+
+
 class ForestGenSpec(SceneSpec):
     """A specification for generating a forest scene."""
 
@@ -83,6 +90,11 @@ class ForestGenSpec(SceneSpec):
             size=(size, size),
             palette=[TreeSpec(), GrassSpec()],
         )
+        self.origin = (
+            BORDER_MARGIN,
+            BORDER_MARGIN,
+            NOISE_FUNC(BORDER_MARGIN, BORDER_MARGIN) + 1.0,
+        )
 
     def generate(self) -> HeightmapTerrain:
 
@@ -90,9 +102,12 @@ class ForestGenSpec(SceneSpec):
         # so that the hooked up asset classes can depend on that extra data
         return HeightmapTerrain(
             heightmap_to_meshes(
-                NOISE_FUNC, int(self.size[0]), classifier=classify_terrain
+                NOISE_FUNC,
+                int(self.size[0]),
+                step=0.1,
+                classifier=classify_terrain,
             ),
-            (0.0, 0.0, NOISE_FUNC(0.0, 0.0)),
+            self.origin,
             self.size,
             NOISE_FUNC,
         )
@@ -134,6 +149,7 @@ class TreeSpec(AssetSpec):
         state.run_state(self.sim_duration)
         logger.debug("Simulation finished")
 
+        origin_2d = (terrain.origin[0], terrain.origin[1])
         # then we create the tree instances
         model_factory = PlantModelFactory()
         return [
@@ -145,6 +161,7 @@ class TreeSpec(AssetSpec):
                 {"color": "green", "species": plant.species.name},
             )
             for i, plant in enumerate(state)
+            if math.dist(plant.coords, origin_2d) > 10.0
         ]
 
 
@@ -171,6 +188,7 @@ class GrassSpec(AssetSpec):
 
         # then we create the tree instances
         model_factory = PlantModelFactory()
+
         return [
             self.create_instance(
                 f"Grass_{i}",
