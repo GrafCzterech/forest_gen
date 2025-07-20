@@ -1,4 +1,5 @@
 from scipy.stats.qmc import PoissonDisk
+import math
 
 from ..heightmap import normalized_noise2
 
@@ -36,8 +37,8 @@ def grass_distribution(width: int, height: int) -> list:
     Returns:
         list: List of distributed grass points.
     """
-    grass_plain = grass_points(width, height, 1)
-    grass_forest = grass_points(width, height, 1)
+    grass_plain = grass_points(width, height, 0.75)
+    grass_forest = grass_points(width, height, 2)
 
     grass_end = []
     for item in grass_plain:
@@ -63,3 +64,26 @@ def classify_terrain(x: float, y: float) -> str:
     if normalized_noise2(x, y) > 0.5:
         return "forest"
     return "plain"
+
+def remove_grass_near_tree(grass: list, trees: list) -> list:
+    """Remove grass points that are too close to a tree.
+
+    Args:
+        grass (list): The list of grass points.
+        trees (list): The list of trees (x, y).
+
+    Returns:
+        list: The filtered list of grass points.
+    """
+    grass_filtered = []
+
+    for grass_point in grass:
+        check = True
+        for tree in trees:
+            if math.dist(tree, grass_point) < 2:
+                check = False
+                break
+        if check:
+            grass_filtered.append(grass_point)
+    
+    return grass_filtered

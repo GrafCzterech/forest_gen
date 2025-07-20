@@ -3,7 +3,7 @@
 from .sim import Simulation
 from .state import SimulationState
 from .definitions import Species, Plant
-from .grass import grass_points, classify_terrain, grass_distribution
+from .grass import grass_points, classify_terrain, grass_distribution, remove_grass_near_tree
 
 __all__ = [
     "Simulation",
@@ -13,4 +13,5 @@ __all__ = [
     "grass_points",
     "classify_terrain",
     "grass_distribution",
+    "remove_grass_near_tree",
 ]
