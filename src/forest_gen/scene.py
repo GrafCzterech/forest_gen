@@ -1,6 +1,7 @@
 from typing import Callable
 from logging import getLogger
 import math
+import random
 
 logger = getLogger(__name__)
 
@@ -16,7 +17,12 @@ from trimesh import Trimesh
 # this is sort of a fasade file for the whole module
 
 from .heightmap import NOISE_FUNC, heightmap_to_meshes, normalized_noise2
-from .asset_dist import Simulation, Species, grass_distribution, remove_grass_near_tree
+from .asset_dist import (
+    Simulation,
+    Species,
+    grass_distribution,
+    remove_grass_near_tree,
+)
 from .assets import PlantModelFactory
 
 # i have heard many a voice from vile dissidents that showcase their weakness
@@ -87,10 +93,12 @@ class ForestGenSpec(SceneSpec):
             size=(size, size),
             palette=[AllSpec()],
         )
+        x = random.uniform(BORDER_MARGIN, size - BORDER_MARGIN)
+        y = random.uniform(BORDER_MARGIN, size - BORDER_MARGIN)
         self.origin = (
-            BORDER_MARGIN,
-            BORDER_MARGIN,
-            NOISE_FUNC(BORDER_MARGIN, BORDER_MARGIN) + 1.0,
+            x,
+            y,
+            NOISE_FUNC(x, y) + 1.0,
         )
 
     def generate(self) -> HeightmapTerrain:
@@ -162,54 +170,6 @@ class TreeSpec(AssetSpec):
         ]
 
 
-class GrassSpec(AssetSpec):
-    """Specification for generating grass in a forest scene."""
-
-    def __init__(self):
-        """Construct a GrassSpec."""
-        super().__init__("grass")
-
-    def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
-        """Generate a list of grass instances based on the given terrain.
-
-        Args:
-            terrain (HeightmapTerrain): The terrain instance on which to generate grass.
-
-        Returns:
-            list[AssetInstance]: A list of generated grass asset instances.
-        """
-        # do the simulation
-        logger.debug("Generating grass")
-        grass = grass_distribution(int(terrain.size[0]), int(terrain.size[1]))
-        logger.debug("Generation finished")
-
-        # then we create the grass instances
-        model_factory = PlantModelFactory()
-
-
-        AssetList = []
-
-        for i, plant in enumerate(grass):
-            if classify_terrain(plant[0], plant[1]) == "forest":
-              AssetList.append(self.create_instance(
-                f"Grass_{i}",
-                model_factory.get_model_by_name("Grass", 1),
-                (plant[0], plant[1], terrain.raw(*plant)),
-                (0.70711, 0.70711, 0.0, 0.0),
-                {"color": "blue", "species": "Grass"},
-            ))
-            elif classify_terrain(plant[0], plant[1]) == "plain":
-              AssetList.append(self.create_instance(
-                f"Grass_{i}",
-                model_factory.get_model_by_name("Grass", 2),
-                (plant[0], plant[1], terrain.raw(*plant)),
-                (0.70711, 0.70711, 0.0, 0.0),
-                {"color": "blue", "species": "Grass"},
-            ))
-
-        return AssetList
-
-
 class AllSpec(AssetSpec):
     """Specification for generating all assets in a forest scene. One Spec to rule them all."""
 
@@ -239,10 +199,10 @@ class AllSpec(AssetSpec):
             list[AssetInstance]: A list of generated grass asset instances.
         """
 
-        #List for all assets
+        # List for all assets
         AssetList = []
 
-        #create factory for assets
+        # create factory for assets
         model_factory = PlantModelFactory()
 
         # do the trees simulation
@@ -257,36 +217,42 @@ class AllSpec(AssetSpec):
 
         for i, plant in enumerate(state):
             if math.dist(plant.coords, origin_2d) > 10.0:
-                AssetList.append(self.create_instance(
-                    f"{plant.species.name}_{i}",
-                    model_factory.get_model(plant),
-                    (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)),
-                    (0.70711, 0.70711, 0.0, 0.0),
-                    {"color": "green", "species": plant.species.name},
-                    ))
+                AssetList.append(
+                    self.create_instance(
+                        f"{plant.species.name}_{i}",
+                        model_factory.get_model(plant),
+                        (
+                            plant.coords[0],
+                            plant.coords[1],
+                            terrain.raw(*plant.coords),
+                        ),
+                        (0.70711, 0.70711, 0.0, 0.0),
+                        {"color": "green", "species": plant.species.name},
+                    )
+                )
 
         # do the grass simulation
         logger.debug("Generating grass")
-        unfiltered_grass = grass_distribution(int(terrain.size[0]), int(terrain.size[1]))
-        grass = remove_grass_near_tree(unfiltered_grass, [plant.coords for plant in state])
+        unfiltered_grass = grass_distribution(
+            int(terrain.size[0]), int(terrain.size[1])
+        )
+        grass = remove_grass_near_tree(
+            unfiltered_grass, [plant.coords for plant in state]
+        )
         logger.debug("Grass generation finished")
 
         for i, plant in enumerate(grass):
-            if classify_terrain(plant[0], plant[1]) == "forest":
-              AssetList.append(self.create_instance(
-                f"Grass_{i}",
-                model_factory.get_model_by_name("Grass", 1),
-                (plant[0], plant[1], terrain.raw(*plant)),
-                (0.70711, 0.70711, 0.0, 0.0),
-                {"color": "blue", "species": "Grass"},
-            ))
-            elif classify_terrain(plant[0], plant[1]) == "plain":
-              AssetList.append(self.create_instance(
-                f"Grass_{i}",
-                model_factory.get_model_by_name("Grass", 2),
-                (plant[0], plant[1], terrain.raw(*plant)),
-                (0.70711, 0.70711, 0.0, 0.0),
-                {"color": "blue", "species": "Grass"},
-            ))
+            cls = classify_terrain(plant[0], plant[1])
+            AssetList.append(
+                self.create_instance(
+                    f"Grass_{i}",
+                    model_factory.get_model_by_name(
+                        "Grass", (cls == "forest") + 1
+                    ),
+                    (plant[0], plant[1], terrain.raw(*plant)),
+                    (0.70711, 0.70711, 0.0, 0.0),
+                    {"color": "blue", "species": "Grass"},
+                )
+            )
 
         return AssetList
