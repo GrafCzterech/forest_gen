@@ -1,5 +1,5 @@
-from forest_gen.temp.TerrainBuilder import TerrainBuilder
-from forest_gen.temp.TerrainConfig import TerrainConfig
+from forest_gen.temp.Terrain.TerrainBuilder import TerrainBuilder
+from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
 
 
 builder = (TerrainBuilder()

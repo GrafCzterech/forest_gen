@@ -1,5 +1,5 @@
-from .sim import Simulation
-from .state import SimulationState
+from ..sim import Simulation
+from ..state import SimulationState
 from .ForestConfig import ForestConfig
 
 

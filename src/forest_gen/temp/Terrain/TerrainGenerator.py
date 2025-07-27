@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from .DrainageCarver        import DrainageCarver
-from .FlowAccumulator       import FlowAccumulator
-from .SlopeAspectCalculator import SlopeAspectCalculator
+from ..Utils.DrainageCarver        import DrainageCarver
+from ..Utils.FlowAccumulator       import FlowAccumulator
+from ..Utils.SlopeAspectCalculator import SlopeAspectCalculator
 
-from .Export.ExportStrategy        import ExportStrategy
-from .Microrelief.MicroreliefStrategy import MicroreliefStrategy
-from .Moisture.MoistureModel          import MoistureModel
-from .Noise.NoiseStrategy             import NoiseStrategy
+from ..Export.ExportStrategy        import ExportStrategy
+from ..Microrelief.MicroreliefStrategy import MicroreliefStrategy
+from ..Moisture.MoistureModel          import MoistureModel
+from ..Noise.NoiseStrategy             import NoiseStrategy
 
 from .TerrainConfig import TerrainConfig
 
-from .Visualization import (
+from ..Visualization import (
     HeightmapVisualizer,
     FlowVisualizer,
     MoistureVisualizer,

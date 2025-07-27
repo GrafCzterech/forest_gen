@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from .NoiseStrategy import NoiseStrategy
-from forest_gen.temp.TerrainConfig import TerrainConfig
+from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
 
 class FractalNoise(NoiseStrategy):
     """Fractal Brownian Motion (fBm) noise implementation."""

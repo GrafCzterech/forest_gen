@@ -3,20 +3,20 @@ from typing import Dict
 
 from .TerrainGenerator import TerrainGenerator
 
-from .Export.PNGExporter import PNGExporter
-from .Export.ExportFactory import ExportFactory
-from .Export.ExportStrategy import ExportStrategy
+from ..Export.PNGExporter import PNGExporter
+from ..Export.ExportFactory import ExportFactory
+from ..Export.ExportStrategy import ExportStrategy
 
-from .Microrelief import BasicMicrorelief, NoneMicrorelief
-from .Microrelief.MicroreliefStrategy import MicroreliefStrategy
+from ..Microrelief import BasicMicrorelief, NoneMicrorelief
+from ..Microrelief.MicroreliefStrategy import MicroreliefStrategy
 
-from .Moisture import DefaultMoistureModel
-from .Moisture.MoistureModel import MoistureModel
+from ..Moisture import DefaultMoistureModel
+from ..Moisture.MoistureModel import MoistureModel
 
-from .Noise import FractalNoise, NoiseFactory
-from .Noise.NoiseStrategy import NoiseStrategy
+from ..Noise import FractalNoise, NoiseFactory
+from ..Noise.NoiseStrategy import NoiseStrategy
 
-from .Visualization import Visualizer
+from ..Visualization import Visualizer
 
 
 class TerrainBuilder:

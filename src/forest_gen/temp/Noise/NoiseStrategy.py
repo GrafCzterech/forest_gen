@@ -1,6 +1,6 @@
 
 from abc import ABC, abstractmethod
-from forest_gen.temp.TerrainConfig import TerrainConfig
+from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
 import numpy as np
 
 
