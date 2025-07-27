@@ -41,30 +41,34 @@ class Simulation:
         """Create a new simulation state.
 
         Args:
-            scene_density (float): Density of the scene. Higher values mean more plants.
-
+            scene_density (float): Base density multiplier for the entire scene.
+                This value is multiplied by each species' ``species_density``
+                (in plants per square meter).
         Returns:
             SimulationState: A new simulation state.
         """
         instances: list[Plant] = []
-        points: list[list[float]] = self.disk.fill_space().tolist()
-        self.disk.reset()
         species_list = [
             sp for type_species in self.species.values() for sp in type_species
         ]
         ns = [
-            scene_density
-            * sp.species_density
-            * self.size[0]
-            * self.size[1]
+            scene_density * sp.species_density * self.size[0] * self.size[1]
             for sp in species_list
         ]
-        tot_n = min(len(points) / sum(ns), 1.0)
+
+        total_n = sum(ns)
+        points: list[list[float]] = self.disk.random(int(total_n)).tolist()
+        self.disk.reset()
+        random.shuffle(points)
+        tot_n = len(points) / total_n if total_n else 0
+
+        i = 0
         for sp, n_val in zip(species_list, ns):
-                    n = math.floor(n_val * tot_n)
-                    for _ in range(n):
-                        point = points.pop(random.randint(0, len(points) - 1))
-                        instances.append(Plant((point[0], point[1]), sp, 0))
+            n = math.floor(n_val * tot_n)
+            for _ in range(n):
+                point = points[i]
+                i += 1
+                instances.append(Plant((point[0], point[1]), sp, 0))
 
         # simulation initialized
 

@@ -28,8 +28,9 @@ class Species:
     name: str
     max_age: int
     """Maximum age of the plant."""
-    species_density: float
-    """Density used to calculate the initial number of plants in the simulation. Higher values mean more plants."""
+    species_density: float = 0.02
+    """Target density in plants per square meter used for the initial number of
+    plants in the simulation."""
     reproduction_rate: int = 5
     """Maximum number of seeds produced by a plant in one year."""
     reproduction_radius: float = 20.0

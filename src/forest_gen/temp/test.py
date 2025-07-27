@@ -20,7 +20,7 @@ generator.generate(config)
 forest_builder = (
     ForestBuilder()
     .with_size((config.cols * config.resolution, config.rows * config.resolution))
-    .add_species("trees", Species("oak", 5, 0.1))
+    .add_species("trees", Species("oak", 5, 0.02))
     .with_terrain(generator)
 )
 forest = forest_builder.build()

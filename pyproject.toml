@@ -19,7 +19,6 @@ dependencies = [
 packages = [
     "forest_gen",
     "forest_gen.heightmap",
-    "forest_gen.asset_dist",
     "forest_gen.temp",
 ]
 package-dir = { "" = "src" }

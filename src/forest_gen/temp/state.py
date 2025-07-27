@@ -49,7 +49,9 @@ class SimulationState:
         return x, y
 
     def get_nearby(
-        self, coords_or_plant: Plant | tuple[float, float], radius: float | None = None
+        self,
+        coords_or_plant: Plant | tuple[float, float],
+        radius: float | None = None,
     ) -> chain[Plant]:
         """Get the plants in a radius around the given coordinates or Plant.
 
@@ -75,8 +77,12 @@ class SimulationState:
         radius = math.ceil(radius / self.cell_width)
         return chain.from_iterable(
             self.map[i][j]
-            for i in range(max(0, x - radius), min(self.grid_width, x + radius) + 1)
-            for j in range(max(0, y - radius), min(self.grid_height, y + radius) + 1)
+            for i in range(
+                max(0, x - radius), min(self.grid_width, x + radius) + 1
+            )
+            for j in range(
+                max(0, y - radius), min(self.grid_height, y + radius) + 1
+            )
         )
 
     def get_nearby_plant(self, plant: Plant) -> chain[Plant]:
@@ -116,30 +122,49 @@ class SimulationState:
         """
         return chain.from_iterable(chain.from_iterable(self.map))
 
-    def run_state(self, num_years: int) -> None:
+    def __len__(self) -> int:
+        """Return number of plants in the simulation state."""
+        return sum(len(cell) for row in self.map for cell in row)
+
+    def run_state(
+        self, num_years: int, max_population: int | None = None
+    ) -> None:
         """Run the simulation state for a given number of years.
 
         Args:
             num_years (int): Number of years to run the simulation state.
+            max_population (int | None): Optional cap on the population size. If
+                provided the simulation stops spawning new plants once the
+                number of plants reaches this limit.
         """
         for year in range(num_years):
             logger.debug(f"Year {year + 1}/{num_years}")
-            sum_a = 0
             pop_counter: dict[Species, int] = {}
-            for plant in self:
-                count = pop_counter.get(plant.species, 0)
-                pop_counter[plant.species] = count + 1
-                sum_a += 1
-            for plant in tuple(self):  # frozen to avoid mutation
-                # kill plants that are too old
+            
+            plants_now = list(self)
+            for plant in plants_now:
+                pop_counter[plant.species] = (
+                    pop_counter.get(plant.species, 0) + 1
+                )
+
+            sum_a = len(plants_now)
+            if max_population is not None and sum_a >= max_population:
+                logger.debug("Population limit reached; stopping simulation")
+                break
+
+            for plant in plants_now:  # frozen to avoid mutation
                 if plant.age > plant.species.max_age:
                     if plant in self:
                         self.remove(plant)
                     continue
                 plant.age += 1
-                # allow the plant to reproduce
+
+
+                if max_population is not None and len(self) >= max_population:
+                    continue
+
+
                 for new_plant in plant.seed():
-                    # sanity check
                     if (
                         new_plant.coords[0] < 0
                         or new_plant.coords[0] > self.size[0]
@@ -147,7 +172,6 @@ class SimulationState:
                         or new_plant.coords[1] > self.size[1]
                     ):
                         continue
-                    # check if the plant is viable
                     viable = True
                     for other_plant in tuple(self.get_nearby_plant(new_plant)):
                         # faster than max()
@@ -168,5 +192,19 @@ class SimulationState:
                                 break
                             else:
                                 self.remove(other_plant)
+
                     if viable:
                         self.add(new_plant)
+                        sum_a += 1
+
+                        if (
+                            max_population is not None
+                            and sum_a >= max_population
+                        ):
+                            break
+
+                if max_population is not None and sum_a >= max_population:
+                    break
+
+            if max_population is not None and sum_a >= max_population:
+                break

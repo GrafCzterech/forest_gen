@@ -1,12 +1,12 @@
 import unittest
-from forest_gen.asset_dist import SimulationState, Plant, Species, Simulation
+from forest_gen.temp import SimulationState, Plant, Species, Simulation
 from math import dist
 
 
 class TestSimulationState(unittest.TestCase):
 
-    species_a = Species("a", 5, 0.1, radius=2.0)
-    species_b = Species("b", 4, 0.1)
+    species_a = Species("a", 5, 0.02, radius=2.0)
+    species_b = Species("b", 4, 0.05)
 
     def test_iter(self):
         init = (
@@ -36,7 +36,7 @@ class TestSimulationState(unittest.TestCase):
     def test_auto_find_nearby(self):
         size = 10
         for size in range(1, 50):
-            spec = Species("spec", 5, 0.1, radius=float(size))
+            spec = Species("spec", 5, 2, radius=float(size))
             init = (Plant((i, i), spec, 0) for i in range(size))
             state = SimulationState(init, (size, size))
             for el in init:
@@ -73,6 +73,21 @@ class TestSimulationState(unittest.TestCase):
                 )
         self.assertTrue(not_empty)
 
+    def test_reproduction_limit(self):
+        species = Species(
+            "fast",
+            3,
+            0.1,
+            reproduction_rate=3,
+            reproduction_radius=5.0,
+            radius=1.0,
+        )
+        init = [Plant((float(i), 0.0), species, 0) for i in range(5)]
+        state = SimulationState(init, (50, 10))
+        max_pop = state.grid_width * state.grid_height
+        state.run_state(10, max_population=max_pop)
+        self.assertGreater(len(state), len(init))
+        self.assertLessEqual(len(state), max_pop)
 
 if __name__ == "__main__":
     unittest.main()
