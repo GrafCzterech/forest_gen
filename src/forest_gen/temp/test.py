@@ -1,6 +1,8 @@
 from forest_gen.temp.Terrain.TerrainBuilder import TerrainBuilder
 from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
-
+from forest_gen.temp.Forest.ForestBuilder import ForestBuilder
+from forest_gen.temp.Forest.ForestConfig import ForestConfig
+from forest_gen.temp.definitions import Species
 
 builder = (TerrainBuilder()
            .with_noise("fractal")
@@ -13,3 +15,14 @@ config = TerrainConfig(rows=100, cols=100, resolution=5.0)
 generator.generate(config)
 generator.export("output.terrain.glb")
 generator.visualize_all()
+
+# Build a simple forest using the generated terrain moisture
+forest_builder = (
+    ForestBuilder()
+    .with_size((config.cols * config.resolution, config.rows * config.resolution))
+    .add_species("trees", Species("oak", 5, 0.1))
+    .with_terrain(generator)
+)
+forest = forest_builder.build()
+forest_state = forest.generate(ForestConfig(0.2,5))
+print(f"Generated {len(tuple(forest_state))} plants")

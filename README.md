@@ -32,3 +32,10 @@ Trees for rudimentary simulation can be found under this address:
 The terrain generator is built using a fluent builder that assembles noise, microrelief, moisture, export and visualization strategies. `TerrainGenerator` coordinates these components according to a `TerrainConfig` and utilities like `FlowAccumulator` and `SlopeAspectCalculator` to carve drainage and compute hydrology. The diagram below shows the main classes involved.
 
 ![Terrain generation UML](docs/temp_terrain_generator_uml.png)
+
+## Forest Generation
+
+`ForestGenerator` can optionally take a `TerrainGenerator` (or its
+moisture array and resolution) when built. Each species' viability map
+is then multiplied by terrain moisture at the queried coordinates,
+allowing plants to thrive more in wetter areas.

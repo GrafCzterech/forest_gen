@@ -5,6 +5,7 @@ Low-level terrain-building algorithms.
 from .Terrain.TerrainBuilder import TerrainBuilder
 from .Terrain.TerrainConfig import TerrainConfig
 from .Terrain.TerrainGenerator import TerrainGenerator
+from .Terrain.TerrainViabilityMap import TerrainViabilityMap
 from .Utils.DrainageCarver import DrainageCarver
 from .Utils.FlowAccumulator import FlowAccumulator
 from .Utils.SlopeAspectCalculator import SlopeAspectCalculator
@@ -20,6 +21,7 @@ __all__ = [
     "TerrainBuilder",
     "TerrainConfig",
     "TerrainGenerator",
+    "TerrainViabilityMap",
     "DrainageCarver",
     "FlowAccumulator",
     "SlopeAspectCalculator",
