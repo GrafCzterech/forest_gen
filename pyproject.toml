@@ -16,12 +16,16 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = ["forest_gen", "forest_gen.heightmap", "forest_gen.asset_dist"]
+packages = [
+    "forest_gen",
+    "forest_gen.heightmap",
+    "forest_gen.asset_dist",
+    "forest_gen.temp",
+]
 package-dir = { "" = "src" }
 
 [project.optional-dependencies]
 dev = ["black"]
-test = ["unittest"]
 vis = ["matplotlib", "ipykernel"]
 
 [project.urls]
