@@ -25,3 +25,10 @@ suposedly is a superior iteration on Perlin noise.
 
 Trees for rudimentary simulation can be found under this address:
 [TreesPackage](https://drive.google.com/file/d/1YJbbOOK97fa1lHPxYOv-jeBEiVdRrioW/view?usp=sharing)
+
+
+## Terrain Generation Pipeline
+
+The terrain generator is built using a fluent builder that assembles noise, microrelief, moisture, export and visualization strategies. `TerrainGenerator` coordinates these components according to a `TerrainConfig` and utilities like `FlowAccumulator` and `SlopeAspectCalculator` to carve drainage and compute hydrology. The diagram below shows the main classes involved.
+
+![Terrain generation UML](docs/temp_terrain_generator_uml.png)
