@@ -75,12 +75,8 @@ class SimulationState:
         radius = math.ceil(radius / self.cell_width)
         return chain.from_iterable(
             self.map[i][j]
-            for i in range(
-                max(0, x - radius), min(self.grid_width - 1, x + radius) + 1
-            )
-            for j in range(
-                max(0, y - radius), min(self.grid_height - 1, y + radius) + 1
-            )
+            for i in range(max(0, x - radius), min(self.grid_width, x + radius) + 1)
+            for j in range(max(0, y - radius), min(self.grid_height, y + radius) + 1)
         )
 
     def get_nearby_plant(self, plant: Plant) -> chain[Plant]:
