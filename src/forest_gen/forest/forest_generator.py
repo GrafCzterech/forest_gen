@@ -1,4 +1,9 @@
-from ..asset_dist import Simulation, SimulationState, TerrainViabilityMap
+from ..asset_dist import (
+    Simulation,
+    SimulationState,
+    TerrainViabilityMap,
+    Species,
+)
 from .forest_config import ForestConfig
 from ..terrain import Terrain
 
@@ -9,7 +14,7 @@ class ForestGenerator:
     def __init__(
         self,
         size: tuple[float, float],
-        species: dict[str, set],
+        species: dict[str, set[Species]],
         terrain: Terrain | None = None,
     ):
         self._sim = Simulation(size, species)

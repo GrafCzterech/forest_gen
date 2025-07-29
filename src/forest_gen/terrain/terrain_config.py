@@ -13,10 +13,13 @@ class TerrainConfig:
         default_factory=lambda: {"flow": 0.5, "slope": 0.3, "aspect": 0.2}
     )
 
+    def transform(self, x: float) -> int:
+        return int(x // self.resolution)
+
     @property
     def rows(self) -> int:
-        return int(self.size // self.resolution)
+        return self.transform(self.size)
 
     @property
     def cols(self) -> int:
-        return int(self.size // self.resolution)
+        return self.rows

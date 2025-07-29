@@ -27,7 +27,9 @@ class FractalNoise(NoiseStrategy):
 
         for _ in range(config.octaves):
             noise = np.random.rand(rows, cols)
-            sigma = (rows + cols) / (config.scale * freq * 2.0)
+            sigma = (
+                (rows + cols) * config.resolution / (config.scale * freq * 2.0)
+            )
             smooth = gaussian_filter(noise, sigma=sigma, mode="wrap")
             heightmap += smooth * amp  # type: ignore[operator]
             total_amp += amp

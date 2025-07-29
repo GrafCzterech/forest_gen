@@ -13,15 +13,17 @@ from neuroforgelab import (
 
 from trimesh import Trimesh
 from opensimplex import noise2
+import numpy as np
 
 # this is sort of a facade file for the whole module
 
-from .terrain import TerrainConfig, TerrainBuilder
+from .terrain import TerrainConfig, TerrainBuilder, Terrain
+from .forest import ForestBuilder, ForestConfig
 from .asset_dist import (
     Simulation,
     Species,
-    grass_distribution,
     remove_grass_near_tree,
+    grass_points,
 )
 from .assets import PlantModelFactory
 
@@ -57,7 +59,7 @@ class HeightmapTerrain(TerrainInstance):
         mesh: list[tuple[Trimesh, list[tuple[str, str]]]],
         origin: tuple[float, float, float],
         size: tuple[float, float],
-        raw: Callable[[float, float], float],
+        raw: Terrain,
     ):
         """Initialize the HeightmapTerrain instance.
 
@@ -65,7 +67,7 @@ class HeightmapTerrain(TerrainInstance):
             mesh (list[tuple[Trimesh, list[tuple[str, str]]]]): A list of meshes with their tags.
             origin (tuple[float, float, float]): The origin of the terrain.
             size (tuple[float, float]): The size of the terrain.
-            raw (Callable[[float, float], float]): A callable that takes x and y coordinates and returns the height at that point.
+            raw (Terrain): The encapsulated logical heightmap.
         """
         super().__init__(mesh, origin, size)
         self.raw = raw
@@ -77,6 +79,7 @@ class ForestGenSpec(SceneSpec):
     def __init__(
         self,
         size: int = 256,
+        margin: int = 10,
     ):
         """Initialize the forest generation specification.
 
@@ -90,15 +93,25 @@ class ForestGenSpec(SceneSpec):
             size=(size, size),
             palette=[AllSpec()],
         )
+        generator = (
+            TerrainBuilder()
+            .with_noise("simplex")
+            .with_microrelief(True)
+            .with_moisture_model({})
+            .build()
+        )
+        self.terrain = generator.generate(TerrainConfig(size))
+        self.origin = np.random.random_integers(margin, size - margin, 2)
 
-        def generate(self) -> HeightmapTerrain:
-            # please note how we return a custom subclass that holds extra data,
-            # so that the hooked up asset classes can depend on that extra data
-            return HeightmapTerrain(
-                self.origin,
-                self.size,
-                NOISE_FUNC,
-            )
+    def generate(self) -> HeightmapTerrain:
+        # please note how we return a custom subclass that holds extra data,
+        # so that the hooked up asset classes can depend on that extra data
+        return HeightmapTerrain(
+            self.terrain.to_meshes(),
+            (self.origin[0], self.origin[1], self.terrain(*self.origin)),
+            self.size,
+            self.terrain,
+        )
 
 
 class AllSpec(AssetSpec):
@@ -112,13 +125,7 @@ class AllSpec(AssetSpec):
             tree_density (float, optional): The density of initial trees in the scene. Defaults to 1.0.
         """
         super().__init__("all")
-        self.sim_duration = sim_duration
-        self.tree_density = tree_density
-
-    tree_species = {
-        Species("Oak", 10, 0.005, radius=5.0),
-    }
-    """List of tree species we want to generate."""
+        self.forest_cfg = ForestConfig(tree_density, sim_duration)
 
     def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
         """Generate a list of instances based on the given terrain.
@@ -136,11 +143,17 @@ class AllSpec(AssetSpec):
         # create factory for assets
         model_factory = PlantModelFactory()
 
+        forest = (
+            ForestBuilder()
+            .with_size(terrain.size)
+            .with_terrain(terrain.raw)
+            .add_species("trees", Species("Oak", 10, 0.005, radius=5.0))
+            .build()
+        )
+
         # do the trees simulation
         logger.debug("Starting Tree simulation")
-        sim = Simulation(terrain.size, {self.name: self.tree_species})
-        state = sim.new_state(self.tree_density)
-        state.run_state(self.sim_duration)
+        state = forest.generate(self.forest_cfg)
         logger.debug("Tree simulation finished")
 
         origin_2d = (terrain.origin[0], terrain.origin[1])
@@ -164,8 +177,8 @@ class AllSpec(AssetSpec):
 
         # do the grass simulation
         logger.debug("Generating grass")
-        unfiltered_grass = grass_distribution(
-            int(terrain.size[0]), int(terrain.size[1])
+        unfiltered_grass = grass_points(
+            int(terrain.size[0]), int(terrain.size[1]), 2.0
         )
         grass = remove_grass_near_tree(
             unfiltered_grass, [plant.coords for plant in state]

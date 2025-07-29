@@ -5,6 +5,7 @@ import numpy as np
 from trimesh import Trimesh
 
 from .terrain_config import TerrainConfig
+from .mesh import heightmap_to_mesh, heightmap_to_meshes
 
 
 @dataclass
@@ -17,25 +18,16 @@ class Terrain:
     moisture: np.ndarray
 
     def __call__(self, x: float, y: float) -> float:
-        return self.heightmap[int(y), int(x)]
+        return self.heightmap[
+            self.config.transform(y), self.config.transform(x)
+        ]
 
     def to_mesh(self) -> Trimesh:
-        vertices = np.zeros(
-            (self.heightmap.shape[0], self.heightmap.shape[1], 3)
-        )
-        vertices[:, :, 0] = np.arange(self.heightmap.shape[1])
-        vertices[:, :, 1] = np.arange(self.heightmap.shape[0])[:, None]
-        vertices[:, :, 2] = self.heightmap
+        return heightmap_to_mesh(self, self.config.size, self.config.resolution)
 
-        faces = np.zeros(
-            (self.heightmap.shape[0] - 1, self.heightmap.shape[1] - 1, 2, 3),
-            dtype=np.int32,
+    def to_meshes(
+        self, classify: Callable[[float, float], str] | None = None
+    ) -> list[tuple[Trimesh, list[tuple[str, str]]]]:
+        return heightmap_to_meshes(
+            self, self.config.size, self.config.resolution, classify
         )
-        faces[:, :, 0, 0] = np.arange(self.heightmap.shape[1] - 1)[:, None]
-        faces[:, :, 0, 1] = np.arange(self.heightmap.shape[0] - 1)
-        faces[:, :, 0, 2] = np.arange(self.heightmap.shape[1] - 1)[:, None] + 1
-        faces[:, :, 1, 0] = np.arange(self.heightmap.shape[1] - 1)[:, None] + 1
-        faces[:, :, 1, 1] = np.arange(self.heightmap.shape[0] - 1)
-        faces[:, :, 1, 2] = np.arange(self.heightmap.shape[1] - 1)[:, None]
-
-        return Trimesh(vertices=vertices, faces=faces)

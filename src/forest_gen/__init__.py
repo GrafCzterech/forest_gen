@@ -1,6 +1,4 @@
-"""
-forest_gen – procedural forest-generation toolkit
-"""
+"""forest_gen – procedural forest-generation toolkit"""
 
 from .scene import ForestGenSpec
 
