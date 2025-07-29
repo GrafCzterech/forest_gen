@@ -1,6 +1,6 @@
 from typing import Literal
 
-from .TerrainGenerator import TerrainGenerator
+from .terrain_generator import TerrainGenerator
 from .microrelief import BasicMicrorelief, NoneMicrorelief, MicroreliefStrategy
 from .moisture import DefaultMoistureModel, MoistureModel
 from .noise import FractalNoise, NoiseFactory, NoiseStrategy

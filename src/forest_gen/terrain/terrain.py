@@ -4,7 +4,7 @@ from typing import Callable
 import numpy as np
 from trimesh import Trimesh
 
-from .TerrainConfig import TerrainConfig
+from .terrain_config import TerrainConfig
 
 
 @dataclass

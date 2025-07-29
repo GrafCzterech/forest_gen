@@ -2,8 +2,8 @@
 Moisture-distribution models.
 """
 
-from .DefaultMoistureModel import DefaultMoistureModel
-from .MoistureModel import MoistureModel
+from .default_moisture_model import DefaultMoistureModel
+from .moisture_model import MoistureModel
 
 __all__ = [
     "DefaultMoistureModel",

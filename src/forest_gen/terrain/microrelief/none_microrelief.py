@@ -1,5 +1,5 @@
 import numpy as np
-from .MicroreliefStrategy import MicroreliefStrategy
+from .microrelief_strategy import MicroreliefStrategy
 
 
 class NoneMicrorelief(MicroreliefStrategy):
@@ -8,4 +8,3 @@ class NoneMicrorelief(MicroreliefStrategy):
     def apply(self, heightmap: np.ndarray) -> np.ndarray:
         """Apply microrelief to a heightmap."""
         return heightmap
-

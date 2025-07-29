@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from .ExportStrategy import ExportStrategy
+from .export_strategy import ExportStrategy
 
 
 class PNGExporter(ExportStrategy):
@@ -13,6 +13,5 @@ class PNGExporter(ExportStrategy):
 
     def export(self, heightmap: np.ndarray, path: str) -> None:
         img_arr = (heightmap * 255).astype(np.uint8)
-        img = Image.fromarray(img_arr, mode='L')
+        img = Image.fromarray(img_arr, mode="L")
         img.save(path)
-

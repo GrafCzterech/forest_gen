@@ -7,7 +7,7 @@ from .microrelief import MicroreliefStrategy
 from .moisture import MoistureModel
 from .noise import NoiseStrategy
 
-from .TerrainConfig import TerrainConfig
+from .terrain_config import TerrainConfig
 from .terrain import Terrain
 
 import numpy as np

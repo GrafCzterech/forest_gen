@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from .Visualizer import Visualizer
+from .visualiser import Visualizer
 from matplotlib.colors import ListedColormap
 
 
@@ -24,8 +24,7 @@ class MatplotlibVisualizer(Visualizer):
 
     def show_moisture_classes(self, classes):
         fig, ax = plt.subplots()
-        cmap = ListedColormap(('sandybrown', 'lightgreen', 'steelblue'))
+        cmap = ListedColormap(("sandybrown", "lightgreen", "steelblue"))
         ax.imshow(classes, cmap=cmap)
         ax.set_title("Moisture Classes")
         plt.show()
-

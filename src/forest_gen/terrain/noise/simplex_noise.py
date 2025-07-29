@@ -1,5 +1,5 @@
-from .NoiseStrategy import NoiseStrategy
-from ..TerrainConfig import TerrainConfig
+from .noise_strategy import NoiseStrategy
+from ..terrain_config import TerrainConfig
 import numpy as np
 import opensimplex as osx
 

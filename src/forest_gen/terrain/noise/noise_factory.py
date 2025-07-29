@@ -1,6 +1,6 @@
-from .FractalNoise import FractalNoise
-from .NoiseStrategy import NoiseStrategy
-from .SimplexNoise import SimplexNoise
+from .fractal_noise import FractalNoise
+from .noise_strategy import NoiseStrategy
+from .simplex_noise import SimplexNoise
 
 from typing import Literal
 

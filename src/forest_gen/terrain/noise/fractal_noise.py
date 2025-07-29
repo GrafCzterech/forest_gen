@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.ndimage import gaussian_filter
-from .NoiseStrategy import NoiseStrategy
-from ..TerrainConfig import TerrainConfig
+from .noise_strategy import NoiseStrategy
+from ..terrain_config import TerrainConfig
 
 
 class FractalNoise(NoiseStrategy):

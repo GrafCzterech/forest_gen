@@ -1,6 +1,6 @@
-from .TerrainBuilder import TerrainBuilder
-from .TerrainConfig import TerrainConfig
-from .TerrainGenerator import TerrainGenerator
+from .terrain_builder import TerrainBuilder
+from .terrain_config import TerrainConfig
+from .terrain_generator import TerrainGenerator
 from .terrain import Terrain
 
 __all__ = [

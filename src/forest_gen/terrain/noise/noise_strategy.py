@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from ..TerrainConfig import TerrainConfig
+from ..terrain_config import TerrainConfig
 import numpy as np
 
 

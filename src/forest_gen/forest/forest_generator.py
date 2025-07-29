@@ -1,5 +1,5 @@
 from ..asset_dist import Simulation, SimulationState, TerrainViabilityMap
-from .ForestConfig import ForestConfig
+from .forest_config import ForestConfig
 from ..terrain import Terrain
 
 

@@ -1,4 +1,4 @@
-from .MicroreliefStrategy import MicroreliefStrategy
+from .microrelief_strategy import MicroreliefStrategy
 
 from scipy.ndimage import gaussian_filter
 import numpy as np

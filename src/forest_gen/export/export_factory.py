@@ -1,6 +1,8 @@
-from .ExportStrategy import ExportStrategy
-from .GLBExporter import GLBExporter
-from .PNGExporter import PNGExporter
+from typing import Literal
+
+from .export_strategy import ExportStrategy
+from .glb_exporter import GLBExporter
+from .png_exporter import PNGExporter
 
 
 class ExportFactory:
@@ -9,13 +11,11 @@ class ExportFactory:
     """
 
     @staticmethod
-    def create(fmt: str, **kwargs) -> ExportStrategy:
+    def create(fmt: Literal["glb", "png", "image"], **kwargs) -> ExportStrategy:
         """Return an ExportStrategy matching the given format."""
-        key = fmt.lower()
-        if key == 'glb':
+        if fmt == "glb":
             return GLBExporter(**kwargs)
-        elif key in ('png', 'image'):
+        elif fmt in ("png", "image"):
             return PNGExporter(**kwargs)
         else:
             raise ValueError(f"Unknown export format: {fmt}")
-
