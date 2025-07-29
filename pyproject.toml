@@ -16,16 +16,12 @@ dependencies = [
 ]
 
 [tool.setuptools]
-packages = [
-    "forest_gen",
-    "forest_gen.heightmap",
-    "forest_gen.temp",
-]
 package-dir = { "" = "src" }
 
 [project.optional-dependencies]
 dev = ["black"]
 vis = ["matplotlib", "ipykernel"]
+export = ["pillow"]
 
 [project.urls]
 Repository = "https://github.com/GrafCzterech/forest-gen"

@@ -1,6 +1,7 @@
-from forest_gen.temp.Noise.NoiseStrategy import NoiseStrategy
-from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
+from .NoiseStrategy import NoiseStrategy
+from ..TerrainConfig import TerrainConfig
 import numpy as np
+import opensimplex as osx
 
 
 class SimplexNoise(NoiseStrategy):
@@ -13,12 +14,7 @@ class SimplexNoise(NoiseStrategy):
         self.seed = seed
 
     def generate(self, config: TerrainConfig) -> np.ndarray:
-        try:
-            import opensimplex as osx
-        except ImportError:
-            raise ImportError("Please install opensimplex for SimplexNoise: `pip install opensimplex`")
-
-        osx.seed(self.seed or 0) 
+        osx.seed(self.seed or 0)
         rows, cols = config.rows, config.cols
         heightmap = np.zeros((rows, cols), dtype=np.float32)
         freq = 1.0 / config.scale
@@ -26,7 +22,7 @@ class SimplexNoise(NoiseStrategy):
         for i in range(rows):
             for j in range(cols):
                 heightmap[i, j] = osx.noise2(i * freq, j * freq)
-        
+
         min_h, max_h = heightmap.min(), heightmap.max()
         heightmap = (heightmap - min_h) / (max_h - min_h + 1e-8)
         return heightmap

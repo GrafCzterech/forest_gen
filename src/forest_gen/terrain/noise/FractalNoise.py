@@ -1,12 +1,18 @@
 import numpy as np
 from scipy.ndimage import gaussian_filter
 from .NoiseStrategy import NoiseStrategy
-from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
+from ..TerrainConfig import TerrainConfig
+
 
 class FractalNoise(NoiseStrategy):
     """Fractal Brownian Motion (fBm) noise implementation."""
 
-    def __init__(self, persistence: float = 0.5, lacunarity: float = 2.0, seed: int | None = None):
+    def __init__(
+        self,
+        persistence: float = 0.5,
+        lacunarity: float = 2.0,
+        seed: int | None = None,
+    ):
         self.persistence = persistence
         self.lacunarity = lacunarity
         self.seed = seed
@@ -22,7 +28,7 @@ class FractalNoise(NoiseStrategy):
         for _ in range(config.octaves):
             noise = np.random.rand(rows, cols)
             sigma = (rows + cols) / (config.scale * freq * 2.0)
-            smooth = gaussian_filter(noise, sigma=sigma, mode='wrap')
+            smooth = gaussian_filter(noise, sigma=sigma, mode="wrap")
             heightmap += smooth * amp  # type: ignore[operator]
             total_amp += amp
             amp *= self.persistence
@@ -31,5 +37,5 @@ class FractalNoise(NoiseStrategy):
         # Normalize to [0,1]
         heightmap /= total_amp
         heightmap -= heightmap.min()
-        heightmap /= (heightmap.max() + 1e-8)
+        heightmap /= heightmap.max() + 1e-8
         return heightmap

@@ -1,22 +1,23 @@
-from ..sim import Simulation
-from ..state import SimulationState
+from ..asset_dist import Simulation, SimulationState, TerrainViabilityMap
 from .ForestConfig import ForestConfig
+from ..terrain import Terrain
 
 
 class ForestGenerator:
     """Generate plant distributions using the Simulation logic."""
 
     def __init__(
-        self, size: tuple[float, float], species: dict[str, set], terrain=None
+        self,
+        size: tuple[float, float],
+        species: dict[str, set],
+        terrain: Terrain | None = None,
     ):
         self._sim = Simulation(size, species)
-        if (
-            terrain is not None
-            and getattr(terrain, "moisture", None) is not None
-        ):
-            from ..Terrain import TerrainViabilityMap
+        if terrain is not None and terrain.moisture is not None:
 
-            tvm = TerrainViabilityMap(terrain.moisture, terrain.resolution)
+            tvm = TerrainViabilityMap(
+                terrain.moisture, terrain.config.resolution
+            )
             for type_species in species.values():
                 for sp in type_species:
                     orig = sp.viability_map

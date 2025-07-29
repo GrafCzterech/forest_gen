@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from forest_gen.temp.Terrain.TerrainConfig import TerrainConfig
 import numpy as np
 
 
@@ -10,8 +9,8 @@ class MicroreliefStrategy(ABC):
     Methods:
         apply: Apply microrelief to a heightmap.
     """
+
     @abstractmethod
     def apply(self, heightmap: np.ndarray) -> np.ndarray:
         """Apply microrelief to a heightmap."""
         pass
-
