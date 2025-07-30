@@ -10,8 +10,6 @@ from .noise import NoiseStrategy
 from .terrain_config import TerrainConfig
 from .terrain import Terrain
 
-import numpy as np
-
 
 @dataclass
 class TerrainGenerator:

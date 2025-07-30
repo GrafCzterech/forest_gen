@@ -17,14 +17,19 @@ class SimplexNoise(NoiseStrategy):
         osx.seed(self.seed or 0)
         rows, cols = config.rows, config.cols
         heightmap = np.zeros((rows, cols), dtype=np.float32)
-        freq = 1.0 / config.scale
+        freq = (1.0 / config.scale) * config.resolution
 
         for i in range(rows):
             for j in range(cols):
-                heightmap[i, j] = osx.noise2(
-                    i * freq * config.resolution, j * freq * config.resolution
+                heightmap[i, j] = (
+                    osx.noise2(
+                        i * freq,
+                        j * freq,
+                    )
+                    / freq
                 )
 
         min_h, max_h = heightmap.min(), heightmap.max()
-        heightmap = (heightmap - min_h) / (max_h - min_h + 1e-8)
+        print((max_h - min_h + 1e-8))
+        heightmap = (heightmap - min_h) / (max_h - min_h)
         return heightmap

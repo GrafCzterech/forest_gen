@@ -1,4 +1,3 @@
-from typing import Callable
 from logging import getLogger
 import math
 
@@ -20,7 +19,6 @@ import numpy as np
 from .terrain import TerrainConfig, TerrainBuilder, Terrain
 from .forest import ForestBuilder, ForestConfig
 from .asset_dist import (
-    Simulation,
     Species,
     remove_grass_near_tree,
     grass_points,
@@ -100,15 +98,15 @@ class ForestGenSpec(SceneSpec):
             .with_moisture_model({})
             .build()
         )
-        self.terrain = generator.generate(TerrainConfig(size))
+        self.terrain = generator.generate(TerrainConfig(size, 0.1))
         self.origin = np.random.random_integers(margin, size - margin, 2)
 
     def generate(self) -> HeightmapTerrain:
         # please note how we return a custom subclass that holds extra data,
         # so that the hooked up asset classes can depend on that extra data
         return HeightmapTerrain(
-            self.terrain.to_meshes(),
-            (self.origin[0], self.origin[1], self.terrain(*self.origin)),
+            self.terrain.to_meshes(classify_terrain),
+            (self.origin[0], self.origin[1], self.terrain(*self.origin) + 1.0),
             self.size,
             self.terrain,
         )

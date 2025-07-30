@@ -14,11 +14,11 @@ class TerrainConfig:
     )
 
     def transform(self, x: float) -> int:
-        return int(x // self.resolution)
+        return int(round(x / self.resolution, 0))
 
     @property
     def rows(self) -> int:
-        return self.transform(self.size)
+        return self.transform(self.size) + 1
 
     @property
     def cols(self) -> int:
