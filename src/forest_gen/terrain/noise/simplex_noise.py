@@ -21,15 +21,11 @@ class SimplexNoise(NoiseStrategy):
 
         for i in range(rows):
             for j in range(cols):
-                heightmap[i, j] = (
-                    osx.noise2(
-                        i * freq,
-                        j * freq,
-                    )
-                    / freq
+                heightmap[i, j] = osx.noise2(
+                    i * freq,
+                    j * freq,
                 )
 
         min_h, max_h = heightmap.min(), heightmap.max()
-        print((max_h - min_h + 1e-8))
         heightmap = (heightmap - min_h) / (max_h - min_h)
         return heightmap

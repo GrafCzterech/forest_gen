@@ -17,7 +17,7 @@ class MoistureVisualizer(Visualizer):
 
         cmap = ListedColormap(self.colors)
         fig, ax = plt.subplots()
-        im = ax.imshow(classes, cmap=cmap, norm=self.norm, origin="lower")
+        ax.imshow(classes, cmap=cmap, norm=self.norm, origin="lower")
         ax.set_title(title)
 
         legend = [

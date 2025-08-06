@@ -31,3 +31,7 @@ class Terrain:
         return heightmap_to_meshes(
             self, self.config.size, self.config.resolution, classify
         )
+
+    @property
+    def __name__(self):
+        return self.__class__.__name__

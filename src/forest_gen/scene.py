@@ -1,5 +1,6 @@
 from logging import getLogger
 import math
+import random
 
 logger = getLogger(__name__)
 
@@ -12,7 +13,6 @@ from neuroforgelab import (
 
 from trimesh import Trimesh
 from opensimplex import noise2
-import numpy as np
 
 # this is sort of a facade file for the whole module
 
@@ -91,6 +91,16 @@ class ForestGenSpec(SceneSpec):
             size=(size, size),
             palette=[AllSpec()],
         )
+        self.side = size
+        self.origin = (
+            random.randint(margin, size - margin),
+            random.randint(margin, size - margin),
+        )
+
+    def generate(self) -> HeightmapTerrain:
+        # please note how we return a custom subclass that holds extra data,
+        # so that the hooked up asset classes can depend on that extra data
+
         generator = (
             TerrainBuilder()
             .with_noise("simplex")
@@ -98,17 +108,13 @@ class ForestGenSpec(SceneSpec):
             .with_moisture_model({})
             .build()
         )
-        self.terrain = generator.generate(TerrainConfig(size, 0.1))
-        self.origin = np.random.random_integers(margin, size - margin, 2)
+        terrain = generator.generate(TerrainConfig(self.side, 0.1))
 
-    def generate(self) -> HeightmapTerrain:
-        # please note how we return a custom subclass that holds extra data,
-        # so that the hooked up asset classes can depend on that extra data
         return HeightmapTerrain(
-            self.terrain.to_meshes(classify_terrain),
-            (self.origin[0], self.origin[1], self.terrain(*self.origin) + 1.0),
+            terrain.to_meshes(classify_terrain),
+            (self.origin[0], self.origin[1], terrain(*self.origin) + 1.0),
             self.size,
-            self.terrain,
+            terrain,
         )
 
 

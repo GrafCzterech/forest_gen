@@ -1,7 +1,3 @@
-from dataclasses import dataclass
-
-import numpy as np
-
 from .forest_generator import ForestGenerator
 from ..terrain import Terrain
 from ..asset_dist import Species
