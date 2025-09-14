@@ -46,6 +46,7 @@ def classify_terrain(x: float, y: float) -> str:
         return "forest"
     return "plain"
 
+GRASS_BASE_COLOR = (0.07, 0.42, 0.07)
 
 # we need this later on to properly place the trees
 class HeightmapTerrain(TerrainInstance):
@@ -67,7 +68,7 @@ class HeightmapTerrain(TerrainInstance):
             size (tuple[float, float]): The size of the terrain.
             raw (Terrain): The encapsulated logical heightmap.
         """
-        super().__init__(mesh, origin, size)
+        super().__init__(mesh, origin, size, GRASS_BASE_COLOR)
         self.raw = raw
 
 
@@ -184,7 +185,7 @@ class PlantSpec(AssetSpec):
         # do the grass simulation
         logger.debug("Generating grass")
         unfiltered_grass = grass_points(
-            int(terrain.size[0]), int(terrain.size[1]), 2.0
+            int(terrain.size[0]), int(terrain.size[1]), 0.4
         )
         grass = remove_grass_near_tree(
             unfiltered_grass, [plant.coords for plant in state]

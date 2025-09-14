@@ -16,7 +16,6 @@ def grass_points(width: int, height: int, r: float):
     grass_sampler = PoissonDisk(
         2,
         radius=r,
-        rng=1,
         ncandidates=30,
         l_bounds=[0, 0],
         u_bounds=[width, height],
