@@ -89,7 +89,7 @@ class ForestGenSpec(SceneSpec):
         # here the assets are hooked up to the scene
         super().__init__(
             size=(size, size),
-            palette=[AllSpec()],
+            palette=[PlantSpec(origin_margin=margin)],
         )
         self.side = size
         self.origin = (
@@ -118,18 +118,20 @@ class ForestGenSpec(SceneSpec):
         )
 
 
-class AllSpec(AssetSpec):
-    """Specification for generating all assets in a forest scene. One Spec to rule them all."""
+class PlantSpec(AssetSpec):
+    """Specification for generating all plant assets in a forest scene. One Spec to rule them all."""
 
-    def __init__(self, sim_duration: int = 10, tree_density: float = 1.0):
-        """Construct a AllSpec.
+    def __init__(self, sim_duration: int = 10, tree_density: float = 1.0, origin_margin: float = 10.0):
+        """Construct a PlantSpec.
 
         Args:
             sim_duration (int, optional): The duration in years of the simulation used for tree position generation. Defaults to 10.
             tree_density (float, optional): The density of initial trees in the scene. Defaults to 1.0.
+            origin_margin (float, optional): The margin around the origin for generating assets. Defaults to 10.0.
         """
         super().__init__("all")
         self.forest_cfg = ForestConfig(tree_density, sim_duration)
+        self.origin_margin = origin_margin
 
     def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
         """Generate a list of instances based on the given terrain.
@@ -164,7 +166,7 @@ class AllSpec(AssetSpec):
         # then we create the tree instances
 
         for i, plant in enumerate(state):
-            if math.dist(plant.coords, origin_2d) > 10.0:
+            if math.dist(plant.coords, origin_2d) > self.origin_margin:
                 AssetList.append(
                     self.create_instance(
                         f"{plant.species.name}_{i}",
@@ -200,6 +202,31 @@ class AllSpec(AssetSpec):
                     (plant[0], plant[1], terrain.raw(*plant)),
                     (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "blue", "species": "Grass"},
+                )
+            )
+
+        # do the fern simulation (simple test for now, copy from grass)
+        # do the grass simulation
+        logger.debug("Generating ferns")
+        unfiltered_ferns = grass_points(
+            int(terrain.size[0]), int(terrain.size[1]), 3.0
+        )
+        ferns = remove_grass_near_tree(
+            unfiltered_ferns, [plant.coords for plant in state]
+        )
+        logger.debug("Ferns generation finished")
+
+        for i, plant in enumerate(ferns):
+            cls = classify_terrain(plant[0], plant[1])
+            AssetList.append(
+                self.create_instance(
+                    f"Fern{i}",
+                    model_factory.get_model_by_name(
+                        "Fern", 1
+                    ),
+                    (plant[0], plant[1], terrain.raw(*plant)),
+                    (0.70711, 0.70711, 0.0, 0.0),
+                    {"color": "red", "species": "Fern"},
                 )
             )
 
