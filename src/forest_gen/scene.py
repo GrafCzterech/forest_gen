@@ -24,6 +24,7 @@ from .asset_dist import (
     grass_points,
 )
 from .assets import PlantModelFactory
+from .travelsibilitymap import TraversabilityMapBuilder
 
 # i have heard many a voice from vile dissidents that showcase their weakness
 # and complain about how convoluted this file is. As such overt comments
@@ -70,6 +71,7 @@ class HeightmapTerrain(TerrainInstance):
         """
         super().__init__(mesh, origin, size, GRASS_BASE_COLOR)
         self.raw = raw
+        self.traversability_map = TraversabilityMapBuilder(raw)
 
 
 class ForestGenSpec(SceneSpec):
@@ -168,6 +170,9 @@ class PlantSpec(AssetSpec):
 
         for i, plant in enumerate(state):
             if math.dist(plant.coords, origin_2d) > self.origin_margin:
+
+                terrain.traversability_map.add_obstacle_score([plant.coords])
+
                 AssetList.append(
                     self.create_instance(
                         f"{plant.species.name}_{i}",
