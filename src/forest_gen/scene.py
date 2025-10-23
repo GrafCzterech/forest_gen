@@ -47,7 +47,9 @@ def classify_terrain(x: float, y: float) -> str:
         return "forest"
     return "plain"
 
+
 GRASS_BASE_COLOR = (0.07, 0.42, 0.07)
+
 
 # we need this later on to properly place the trees
 class HeightmapTerrain(TerrainInstance):
@@ -124,7 +126,12 @@ class ForestGenSpec(SceneSpec):
 class PlantSpec(AssetSpec):
     """Specification for generating all plant assets in a forest scene. One Spec to rule them all."""
 
-    def __init__(self, sim_duration: int = 10, tree_density: float = 1.0, origin_margin: float = 10.0):
+    def __init__(
+        self,
+        sim_duration: int = 10,
+        tree_density: float = 1.0,
+        origin_margin: float = 10.0,
+    ):
         """Construct a PlantSpec.
 
         Args:
@@ -227,9 +234,7 @@ class PlantSpec(AssetSpec):
             AssetList.append(
                 self.create_instance(
                     f"Fern{i}",
-                    model_factory.get_model_by_name(
-                        "Fern", 1
-                    ),
+                    model_factory.get_model_by_name("Fern", 1),
                     (plant[0], plant[1], terrain.raw(*plant)),
                     (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "red", "species": "Fern"},

@@ -5,6 +5,7 @@ from scipy.interpolate import RegularGridInterpolator
 
 from ..terrain import Terrain
 
+
 def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
     vertex_normals = mesh.vertex_normals
     slope = np.arccos(np.clip(vertex_normals[:, 2], -1.0, 1.0))
@@ -12,7 +13,12 @@ def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
 
 
 class TraversabilityMapBuilder:
-    def __init__(self, terrain: Terrain, resolution_factor: int = 2, max_slope_deg: float = 30.0):
+    def __init__(
+        self,
+        terrain: Terrain,
+        resolution_factor: int = 2,
+        max_slope_deg: float = 30.0,
+    ):
         """Initializes the TraversabilityMapBuilder
 
         Args:
@@ -30,14 +36,29 @@ class TraversabilityMapBuilder:
 
         points = np.c_[self.X.ravel(), self.Y.ravel()]
 
-        slope_rad = compute_slope_per_vertex(mesh).reshape((terrain.config.rows - 1, terrain.config.cols - 1))
-        slope_interp = RegularGridInterpolator((np.linspace(0, size, terrain.config.rows - 1), np.linspace(0, size, terrain.config.cols - 1)), slope_rad)
-        slope_highres = slope_interp(points).reshape(self.high_res_size, self.high_res_size)
+        slope_rad = compute_slope_per_vertex(mesh).reshape(
+            (terrain.config.rows - 1, terrain.config.cols - 1)
+        )
+        slope_interp = RegularGridInterpolator(
+            (
+                np.linspace(0, size, terrain.config.rows - 1),
+                np.linspace(0, size, terrain.config.cols - 1),
+            ),
+            slope_rad,
+        )
+        slope_highres = slope_interp(points).reshape(
+            self.high_res_size, self.high_res_size
+        )
 
         max_slope_rad = np.radians(max_slope_deg)
         self.score = 1.0 - np.clip(slope_highres / max_slope_rad, 0, 1)
 
-    def add_obstacle_score(self, obstacles: list[tuple[float, float]], obstacle_influence_radius: float = 10.0, obstacle_penalty: float = 0.5,) -> None:
+    def add_obstacle_score(
+        self,
+        obstacles: list[tuple[float, float]],
+        obstacle_influence_radius: float = 10.0,
+        obstacle_penalty: float = 0.5,
+    ) -> None:
         """Adds an obstacle score to the traversability map.
 
         Args:
@@ -71,7 +92,6 @@ class TraversabilityMapBuilder:
                     tree_map[i, j] = 1.0 - max_penalty
 
         self.score *= tree_map
-
 
     def get_score(self) -> np.ndarray:
         return np.clip(self.score, 0.0, 1.0)

@@ -52,7 +52,9 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(dist(a.coords, b.coords), a.species.radius)
+                self.assertGreaterEqual(
+                    dist(a.coords, b.coords), a.species.radius
+                )
         self.assertTrue(not_empty)
 
     def test_post_sim_state(self):
@@ -66,7 +68,9 @@ class TestSimulationState(unittest.TestCase):
             for j, b in enumerate(state):
                 if i == j:
                     continue
-                self.assertGreaterEqual(dist(a.coords, b.coords), a.species.radius)
+                self.assertGreaterEqual(
+                    dist(a.coords, b.coords), a.species.radius
+                )
         self.assertTrue(not_empty)
 
     def test_reproduction_limit(self):
@@ -84,6 +88,7 @@ class TestSimulationState(unittest.TestCase):
         state.run_state(10, max_population=max_pop)
         self.assertGreater(len(state), len(init))
         self.assertLessEqual(len(state), max_pop)
+
 
 if __name__ == "__main__":
     unittest.main()

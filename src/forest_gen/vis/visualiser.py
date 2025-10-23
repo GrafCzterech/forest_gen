@@ -9,6 +9,4 @@ class Visualizer(ABC):
     """
 
     @abstractmethod
-    def visualize(self, data: np.ndarray, title: str) -> None:
-        ...
-
+    def visualize(self, data: np.ndarray, title: str) -> None: ...

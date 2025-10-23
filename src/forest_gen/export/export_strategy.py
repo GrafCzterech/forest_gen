@@ -9,4 +9,3 @@ class ExportStrategy(ABC):
     def export(self, heightmap: np.ndarray, path: str) -> None:
         """Export heightmap to given file path."""
         pass
-

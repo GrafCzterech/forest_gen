@@ -26,8 +26,12 @@ class SlopeAspectCalculator:
             for x in range(cols):
                 xm, xp = max(x - 1, 0), min(x + 1, cols - 1)
                 ym, yp = max(y - 1, 0), min(y + 1, rows - 1)
-                dzdx = (heightmap[y, xp] - heightmap[y, xm]) / (2 * self.resolution)
-                dzdy = (heightmap[yp, x] - heightmap[ym, x]) / (2 * self.resolution)
+                dzdx = (heightmap[y, xp] - heightmap[y, xm]) / (
+                    2 * self.resolution
+                )
+                dzdy = (heightmap[yp, x] - heightmap[ym, x]) / (
+                    2 * self.resolution
+                )
                 # slope is the steepest descent angle
                 slope[y, x] = np.degrees(np.arctan(np.hypot(dzdx, dzdy)))
                 # aspect: compass direction the slope faces

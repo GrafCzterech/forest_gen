@@ -71,7 +71,9 @@ class SimulationState:
         else:
             coords = coords_or_plant
             if radius is None:
-                raise TypeError("radius must be provided when passing coordinates")
+                raise TypeError(
+                    "radius must be provided when passing coordinates"
+                )
 
         x, y = self.get_cell(coords)
         radius = math.ceil(radius / self.cell_width)
@@ -140,7 +142,7 @@ class SimulationState:
         for year in range(num_years):
             logger.debug(f"Year {year + 1}/{num_years}")
             pop_counter: dict[Species, int] = {}
-            
+
             plants_now = list(self)
             for plant in plants_now:
                 pop_counter[plant.species] = (
@@ -159,10 +161,8 @@ class SimulationState:
                     continue
                 plant.age += 1
 
-
                 if max_population is not None and len(self) >= max_population:
                     continue
-
 
                 for new_plant in plant.seed():
                     if (
