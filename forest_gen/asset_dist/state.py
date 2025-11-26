@@ -4,6 +4,8 @@ import math
 from copy import copy
 from logging import getLogger
 
+import numpy as np
+
 logger = getLogger(__name__)
 
 from .definitions import Species, Plant
@@ -128,6 +130,64 @@ class SimulationState:
         """Return number of plants in the simulation state."""
         return sum(len(cell) for row in self.map for cell in row)
 
+    def _evaluate_seed(
+        self,
+        new_plant: Plant,
+        pop_counter: dict[Species, int],
+        total_population: int,
+    ) -> tuple[bool, list[Plant]]:
+        """Evaluate whether a seed can be added to the simulation.
+
+        This function batches spatial and viability checks to reduce Python
+        overhead when working with large plant populations.
+
+        Args:
+            new_plant: The candidate plant to insert.
+            pop_counter: Population counts for the current year.
+            total_population: Total population for the current year.
+
+        Returns:
+            A tuple containing a viability flag and the plants that should be
+            removed if the seed is viable.
+        """
+
+        nearby_plants = tuple(self.get_nearby_plant(new_plant))
+        if not nearby_plants:
+            return True, []
+
+        neighbor_coords = np.array([plant.coords for plant in nearby_plants])
+        neighbor_radii = np.array(
+            [plant.species.radius for plant in nearby_plants], dtype=float
+        )
+
+        deltas = neighbor_coords - np.asarray(new_plant.coords, dtype=float)
+        dist_sq = np.einsum("ij,ij->i", deltas, deltas)
+        max_radii = np.maximum(neighbor_radii, new_plant.species.radius)
+        overlap_mask = dist_sq < (max_radii**2)
+
+        overlapping_indices = np.flatnonzero(overlap_mask)
+        if overlapping_indices.size == 0:
+            return True, []
+
+        new_viability = new_plant.vt_prim(pop_counter, total_population)
+        other_viabilities = np.array(
+            [
+                nearby_plants[idx].vt_prim(pop_counter, total_population)
+                for idx in overlapping_indices
+            ],
+            dtype=float,
+        )
+
+        if other_viabilities.max() > new_viability:
+            return False, []
+
+        removable = [
+            nearby_plants[idx]
+            for idx, viability in zip(overlapping_indices, other_viabilities)
+            if new_viability >= viability
+        ]
+        return True, removable
+
     def run_state(
         self, num_years: int, max_population: int | None = None
     ) -> None:
@@ -172,36 +232,24 @@ class SimulationState:
                         or new_plant.coords[1] > self.size[1]
                     ):
                         continue
-                    viable = True
-                    for other_plant in tuple(self.get_nearby_plant(new_plant)):
-                        # faster than max()
-                        if (
-                            new_plant.species.radius
-                            > other_plant.species.radius
-                        ):
-                            max_radius = new_plant.species.radius
-                        else:
-                            max_radius = other_plant.species.radius
-                        dx = new_plant.coords[0] - other_plant.coords[0]
-                        dy = new_plant.coords[1] - other_plant.coords[1]
-                        if (dx**2 + dy**2) < (max_radius**2):
-                            if new_plant.vt_prim(
-                                pop_counter, sum_a
-                            ) < other_plant.vt_prim(pop_counter, sum_a):
-                                viable = False
-                                break
-                            else:
-                                self.remove(other_plant)
+                    viable, removable = self._evaluate_seed(
+                        new_plant, pop_counter, sum_a
+                    )
 
-                    if viable:
-                        self.add(new_plant)
-                        sum_a += 1
+                    if not viable:
+                        continue
 
-                        if (
-                            max_population is not None
-                            and sum_a >= max_population
-                        ):
-                            break
+                    for other_plant in removable:
+                        self.remove(other_plant)
+
+                    self.add(new_plant)
+                    sum_a += 1
+
+                    if (
+                        max_population is not None
+                        and sum_a >= max_population
+                    ):
+                        break
 
                 if max_population is not None and sum_a >= max_population:
                     break

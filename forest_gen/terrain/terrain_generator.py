@@ -27,6 +27,7 @@ class TerrainGenerator:
         hm = self.micro.apply(hm) if config.apply_microrelief else hm
         flow = FlowAccumulator().compute(hm)
         hm = DrainageCarver().apply(hm, flow)
+        hm *= config.height_scale
         slope, aspect = SlopeAspectCalculator(config.resolution).compute(hm)
         moisture = self.moisture_model.compute(flow, slope, aspect)
         return Terrain(config, hm, flow, slope, aspect, moisture)
