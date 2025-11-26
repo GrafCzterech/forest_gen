@@ -40,6 +40,20 @@ class Species:
     viability_map: Callable[[float, float], float] = field(
         default_factory=ViabilityMap
     )
+    juvenile_mortality_depth: float = 0.4
+    """Peak reduction in early-life viability (0-1)."""
+    juvenile_mortality_peak: float = 0.05
+    """Normalized age of highest juvenile mortality risk."""
+    juvenile_mortality_width: float = 0.03
+    """Spread of the juvenile mortality spike as a fraction of max age."""
+    juvenile_recovery_age: float = 0.2
+    """Normalized age by which viability recovers to its peak."""
+    senescence_start: float = 0.7
+    """Normalized age when senescence effects start."""
+    senescence_plateau: float = 0.5
+    """Viability level maintained during senescence plateau."""
+    senescence_plateau_span: float = 0.15
+    """Duration of the senescence plateau as a fraction of lifespan."""
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Species):
@@ -63,12 +77,41 @@ class Plant:
         Returns:
             float: Viability of the plant. Value between 0 and 1.
         """
-        norm_age = self.age / self.species.max_age
+        sp = self.species
+        if sp.max_age <= 0:
+            return 0.0
 
-        if norm_age < 0.5:
-            return norm_age
+        norm_age = max(0.0, min(1.0, self.age / sp.max_age))
+
+        # Juvenile growth toward peak viability with an early-life mortality spike.
+        growth_phase = min(1.0, norm_age / max(sp.juvenile_recovery_age, 1e-6))
+        juvenile_width = max(sp.juvenile_mortality_width, 1e-6)
+        juvenile_penalty = sp.juvenile_mortality_depth * math.exp(
+            -((norm_age - sp.juvenile_mortality_peak) ** 2)
+            / (2 * juvenile_width**2)
+        )
+        juvenile_modifier = max(0.0, 1.0 - juvenile_penalty)
+
+        # If the plant has not reached maturity, viability is limited by growth
+        # and the mortality spike.
+        if norm_age < sp.senescence_start:
+            base_viability = (
+                1.0 if norm_age >= sp.juvenile_recovery_age else growth_phase
+            )
+            return max(0.0, min(1.0, base_viability * juvenile_modifier))
+
+        # Past senescence start, interpolate toward a plateau and hold viability steady.
+        plateau_end = min(1.0, sp.senescence_start + sp.senescence_plateau_span)
+
+        if norm_age < plateau_end:
+            t = (norm_age - sp.senescence_start) / max(
+                plateau_end - sp.senescence_start, 1e-6
+            )
+            viability = 1.0 - t * (1.0 - sp.senescence_plateau)
         else:
-            return 1 - norm_age
+            viability = sp.senescence_plateau
+
+        return max(0.0, min(1.0, viability))
 
     def vt_prim(self, a: dict[Species, int], sum_a: int) -> float:
         """Modified viability of the plant.
