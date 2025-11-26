@@ -178,3 +178,5 @@ env_forestgen
 *.prof
 
 cache
+
+assets

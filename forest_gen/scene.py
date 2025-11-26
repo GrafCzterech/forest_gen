@@ -163,7 +163,7 @@ class PlantSpec(AssetSpec):
             ForestBuilder()
             .with_size(terrain.size)
             .with_terrain(terrain.raw)
-            .add_species("trees", Species("Oak", 10, 0.005, radius=5.0))
+            .add_species("trees", Species("Pine", 10, 0.005, radius=5.0))
             .build()
         )
 
@@ -183,7 +183,7 @@ class PlantSpec(AssetSpec):
                 AssetList.append(
                     self.create_instance(
                         f"{plant.species.name}_{i}",
-                        model_factory.get_model(plant),
+                        model_factory.get_usdz_model_by_name(plant.species.name, random.randint(1,3)),
                         (
                             plant.coords[0],
                             plant.coords[1],

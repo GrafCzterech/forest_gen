@@ -1,5 +1,9 @@
+from matplotlib import scale
 from scipy.stats.qmc import PoissonDisk
+from opensimplex import OpenSimplex
 import math
+
+from warp import noise
 
 
 def grass_points(width: int, height: int, r: float):
@@ -21,7 +25,18 @@ def grass_points(width: int, height: int, r: float):
         u_bounds=[width, height],
     )
     grass = grass_sampler.random(n=int(width * height / (r * r)))
-    return [tuple(point) for point in grass.tolist()]
+    noise = OpenSimplex(seed=1)
+    xpix, ypix = width, height
+    scale = 0.2  # im mniejsza wartość, tym większe wyspy
+    noise_list = [[1 if noise.noise2(i*scale, j*scale) > 0 else 0 for j in range(xpix)] for i in range(ypix)]
+
+    # Filtrowanko z szumuuuuu
+    filtered_grass = [
+        tuple(point) for point in grass.tolist()
+        if noise_list[int(point[0])][int(point[1])] == 1
+    ]
+
+    return filtered_grass
 
 
 def remove_grass_near_tree(grass: list, trees: list) -> list:

@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable
 
+import os
 import numpy as np
 from trimesh import Trimesh
 
@@ -16,6 +17,8 @@ class Terrain:
     slope: np.ndarray
     aspect: np.ndarray
     moisture: np.ndarray
+    # materials: list[str] = ["Mulch", "Ground_Leaves_Oak"]  # FIXME: MAKE IT MORE DYNAMIC
+    materials_path: str = os.path.abspath("forest-gen/assets/materials/Ground")  # FIXME: ZMIENIĆ NA BARDZIEJ DYNAMICZNE
 
     def __call__(self, x: float, y: float) -> float:
         return self.heightmap[
