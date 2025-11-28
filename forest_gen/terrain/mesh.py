@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 import numpy as np
 from trimesh import Trimesh
+from trimesh.visual import TextureVisuals
 
 # this module provides functions to convert a heightmap function into a 3D mesh,
 # with our own spin to it
@@ -32,7 +33,11 @@ def generate_points(
 
 
 def heightmap_to_mesh(
-    heightmap: Callable[[float, float], float], size: int, step: float = 1.0
+    heightmap: Callable[[float, float], float],
+    size: int,
+    step: float = 1.0,
+    *,
+    face_varying_uv: bool = False,
 ) -> Trimesh:
     """Convert a heightmap function to a 3D mesh.
 
@@ -61,9 +66,30 @@ def heightmap_to_mesh(
                 )
             )
 
-    faces = np.array(faces)
+    faces = np.array(faces, dtype=np.int64)
 
-    return Trimesh(vertices=vertices, faces=faces)
+    i_idx, j_idx = np.meshgrid(np.arange(rows), np.arange(cols), indexing="ij")
+    u = (j_idx.ravel() / max(cols - 1, 1)).astype(np.float32)
+    v = (1.0 - i_idx.ravel() / max(rows - 1, 1)).astype(np.float32)
+
+    uv = np.column_stack((u, v)).astype(np.float32)
+
+    if face_varying_uv:
+        expanded_verts = vertices[faces].reshape((-1, 3))
+        expanded_uvs = uv[faces].reshape((-1, 2)).astype(np.float32)
+        expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(-1, 3)
+
+        visual = TextureVisuals(uv=expanded_uvs)
+        setattr(visual, "vertex_colors", None)
+
+        mesh = Trimesh(vertices=expanded_verts, faces=expanded_faces, process=False, visual=visual)
+        return mesh
+
+    visual = TextureVisuals(uv=uv)
+    setattr(visual, "vertex_colors", None)
+
+    mesh = Trimesh(vertices=vertices, faces=faces, process=False, visual=visual)
+    return mesh
 
 
 # important function for terrain semantic class support
@@ -72,6 +98,8 @@ def heightmap_to_meshes(
     size: int,
     step: float = 1.0,
     classifier: Callable[[float, float], str] | None = None,
+    *,
+    face_varying_uv: bool = False,
 ) -> list[tuple[Trimesh, list[tuple[str, str]]]]:
     """Convert a heightmap function to a list of 3D meshes.
 
@@ -115,7 +143,30 @@ def heightmap_to_meshes(
 
                 classes[class1] = faces
 
-    return [
-        (Trimesh(vertices=vertices, faces=faces), [("terrain_class", tag)])
-        for tag, faces in classes.items()
-    ]
+    # build per-vertex UVs using grid indices to match exporter convention
+    i_idx, j_idx = np.meshgrid(np.arange(rows), np.arange(cols), indexing="ij")
+    u = (j_idx.ravel() / max(cols - 1, 1)).astype(np.float32)
+    v = (1.0 - i_idx.ravel() / max(rows - 1, 1)).astype(np.float32)
+
+    uv = np.column_stack((u, v)).astype(np.float32)
+
+    result = []
+    for tag, faces in classes.items():
+        faces_arr = np.array(faces, dtype=np.int64)
+
+        if face_varying_uv:
+            expanded_verts = vertices[faces_arr].reshape((-1, 3))
+            expanded_uvs = uv[faces_arr].reshape((-1, 2)).astype(np.float32)
+            expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(-1, 3)
+
+            visual = TextureVisuals(uv=expanded_uvs)
+            setattr(visual, "vertex_colors", None)
+            mesh = Trimesh(vertices=expanded_verts, faces=expanded_faces, process=False, visual=visual)
+        else:
+            visual = TextureVisuals(uv=uv)
+            setattr(visual, "vertex_colors", None)
+            mesh = Trimesh(vertices=vertices, faces=faces_arr, process=False, visual=visual)
+
+        result.append((mesh, [("terrain_class", tag)]))
+
+    return result
