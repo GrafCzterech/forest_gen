@@ -181,3 +181,5 @@ cache
 
 # models
 models/materials
+
+src/outputs
