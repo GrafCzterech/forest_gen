@@ -178,3 +178,6 @@ env_forestgen
 *.prof
 
 cache
+
+
+src/outputs

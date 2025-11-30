@@ -35,3 +35,8 @@ class Terrain:
     @property
     def __name__(self):
         return self.__class__.__name__
+
+    @property
+    def size(self) -> tuple[float, float]:
+        """Terrain dimensions in meters (width, height)."""
+        return (self.config.size, self.config.size)

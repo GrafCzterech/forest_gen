@@ -4,12 +4,7 @@ from typing import Callable
 import numpy as np
 
 
-from ..asset_dist import (
-    Simulation,
-    SimulationState,
-    TerrainViabilityMap,
-    Species,
-)
+from ..asset_dist import DistributionBuilder, DistributionConfig, SimulationState, Species
 from .forest_config import ForestConfig
 from ..terrain import Terrain
 
@@ -25,7 +20,11 @@ class ForestGenerator:
         terrain_layers: Mapping[str, np.ndarray] | None = None,
         layer_combiner: Callable[[Mapping[str, float]], float] | None = None,
     ):
-        self._sim = Simulation(size, species)
+        builder = DistributionBuilder().with_size(size)
+        for kind, typed_species in species.items():
+            for sp in typed_species:
+                builder.add_species(kind, sp)
+
         if terrain is not None:
 
             available_layers = {
@@ -39,20 +38,14 @@ class ForestGenerator:
             }
             
             if filtered_layers:
-                tvm = TerrainViabilityMap(
+                builder.with_terrain_viability_layers(                    
                     filtered_layers, terrain.config.resolution, combine=layer_combiner
                 )
-                for type_species in species.values():
-                    for sp in type_species:
-                        orig = sp.viability_map
-
-                        def wrapped(x, y, orig=orig):
-                            return orig(x, y) * tvm(x, y)
-
-                        sp.viability_map = wrapped
+        self._generator = builder.build()
 
     def generate(self, config: ForestConfig) -> SimulationState:
-        state = self._sim.new_state(config.scene_density)
-        if config.years:
-            state.run_state(config.years)
-        return state
+        distribution_cfg = DistributionConfig(
+                    scene_density=config.scene_density,
+                    years=config.years,
+                )
+        return self._generator.generate(distribution_cfg)

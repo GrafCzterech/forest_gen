@@ -1,3 +1,3 @@
-from .traversibility import TraversabilityMapBuilder
+from .traversibility import TraversabilityConfig, TraversabilityMapBuilder
 
-__all__ = ["TraversabilityMapBuilder"]
+__all__ = ["TraversabilityConfig", "TraversabilityMapBuilder"]
