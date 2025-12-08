@@ -14,6 +14,10 @@ dependencies = [
     "scipy>=1.0.0",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["forest_gen"]
+
 [project.optional-dependencies]
 dev = ["black"]
 vis = ["matplotlib", "ipykernel"]

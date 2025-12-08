@@ -38,6 +38,19 @@ def grass_points(width: int, height: int, r: float):
 
     return filtered_grass
 
+def grass_cover(width: int, height: int, r: float):
+
+    grass_sampler = PoissonDisk(
+        2,
+        radius=r,
+        ncandidates=30,
+        l_bounds=[0, 0],
+        u_bounds=[width, height],
+    )
+    grass = grass_sampler.random(n=int(width * height / (r * r)))
+
+    return grass
+
 
 def remove_grass_near_tree(grass: list, trees: list) -> list:
     """Remove grass points that are too close to a tree.

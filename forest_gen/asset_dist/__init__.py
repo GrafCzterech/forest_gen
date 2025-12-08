@@ -5,6 +5,7 @@ from .state import SimulationState
 from .definitions import Species, Plant
 from .grass import (
     grass_points,
+    grass_cover,
     remove_grass_near_tree,
 )
 from .terrain_viability import TerrainViabilityMap
@@ -15,6 +16,7 @@ __all__ = [
     "Plant",
     "SimulationState",
     "grass_points",
+    "grass_cover",
     "remove_grass_near_tree",
     "TerrainViabilityMap",
 ]
