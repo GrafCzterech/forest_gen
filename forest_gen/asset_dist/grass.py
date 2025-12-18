@@ -1,76 +1,149 @@
-from matplotlib import scale
-from scipy.stats.qmc import PoissonDisk
-from opensimplex import OpenSimplex
+from __future__ import annotations
+
+
 import math
+import random
+from collections.abc import Iterable, Mapping
 
-from warp import noise
+import numpy as np
+from opensimplex import OpenSimplex
+from scipy.stats.qmc import PoissonDisk
+
+from .definitions import Species
+from .state import SimulationState
+from ..forest import ForestBuilder, ForestConfig
+from ..terrain import Terrain
+
+class PatchyGrassMap:
+    """Simple patchiness map driven by simplex noise."""
+
+    def __init__(self, scale: float = 0.2, seed: int | None = None):
+        self.scale = scale
+        self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
+
+    def __call__(self, x: float, y: float) -> float:
+        return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > 0 else 0.0
 
 
-def grass_points(width: int, height: int, r: float):
-    """Returns a list of points representing simple grass distribution over a given area.
+class TreeProximityMap:
+    """Viability mask that attenuates grass near trees."""
 
-    Args:
-        width (int): The width of the area.
-        height (int): The height of the area.
-        r (float): Minimal radius between points.
+    def __init__(
+        self,
+        tree_positions: Iterable[tuple[float, float]],
+        hard_radius: float = 2.0,
+        falloff_radius: float = 6.0,
+    ):
+        self.tree_positions = tuple(tree_positions)
+        self.hard_radius = hard_radius
+        self.falloff_radius = max(falloff_radius, hard_radius)
 
-    Returns:
-        grass (ndarray): An array of points representing grass distribution.
-    """
-    grass_sampler = PoissonDisk(
+    def __call__(self, x: float, y: float) -> float:
+        if not self.tree_positions:
+            return 1.0
+
+        closest = min(math.dist((x, y), tree) for tree in self.tree_positions)
+        if closest <= self.hard_radius:
+            return 0.0
+        if closest >= self.falloff_radius:
+            return 1.0
+
+        return (closest - self.hard_radius) / (self.falloff_radius - self.hard_radius)
+
+class GrassDistributor:
+    """Distribute grass using the same Simulation patterns as trees."""
+
+    def __init__(
+        self,
+        terrain: Terrain,
+        tree_positions: Iterable[tuple[float, float]] | None = None,
+        patch_scale: float = 0.2,
+        hard_radius: float = 2.0,
+        falloff_radius: float = 6.0,
+        *,
+        max_age: int = 6,
+        species_density: float = 0.35,
+        reproduction_rate: int = 3,
+        reproduction_radius: float = 2.5,
+        radius: float = 0.6,
+    ):
+        self.terrain = terrain
+        self.tree_map = TreeProximityMap(tree_positions or [], hard_radius, falloff_radius)
+        self.patchiness = PatchyGrassMap(patch_scale)
+        self.max_age = max_age
+        self.species_density = species_density
+        self.reproduction_rate = reproduction_rate
+        self.reproduction_radius = reproduction_radius
+        self.radius = radius
+
+
+    def _terrain_layers(self) -> Mapping[str, np.ndarray]:
+        """Build terrain viability layers emphasizing gentle slopes."""
+
+        layers: dict[str, np.ndarray] = {}
+        if self.terrain.moisture is not None:
+            layers["moisture"] = self.terrain.moisture
+
+        if self.terrain.slope is not None:
+            max_slope = float(np.max(self.terrain.slope))
+            if max_slope > 0:
+                layers["slope_viability"] = 1.0 - np.clip(
+                    self.terrain.slope / max_slope, 0.0, 1.0
+                )
+
+        return layers
+
+    def _combine_layers(self, values: Mapping[str, float]) -> float:
+        result = 1.0
+        for value in values.values():
+            result *= value
+        return result
+
+    def _grass_species(self) -> Species:
+        def viability(x: float, y: float) -> float:
+            return self.patchiness(x, y) * self.tree_map(x, y)
+
+        return Species(
+            "Grass",
+            self.max_age,
+            species_density=self.species_density,
+            reproduction_rate=self.reproduction_rate,
+            reproduction_radius=self.reproduction_radius,
+            radius=self.radius,
+            viability_map=viability,
+        )
+
+    def generate(self, config: ForestConfig) -> SimulationState:
+        """Generate grass plants following the Simulation pipeline."""
+
+        builder = (
+            ForestBuilder()
+            .with_size((self.terrain.config.size, self.terrain.config.size))
+            .with_terrain(self.terrain)
+            .with_terrain_viability_layers(
+                self._terrain_layers(), combine=self._combine_layers
+            )
+            .add_species("grass", self._grass_species())
+        )
+
+        forest = builder.build()
+        return forest.generate(config)
+
+
+# Legacy helpers kept for quick sampling in notebooks or other assets.
+def grass_points(width: int, height: int, r: float) -> list[tuple[float, float]]:
+    sampler = PoissonDisk(
         2,
         radius=r,
         ncandidates=30,
         l_bounds=[0, 0],
         u_bounds=[width, height],
     )
-    grass = grass_sampler.random(n=int(width * height / (r * r)))
-    noise = OpenSimplex(seed=1)
-    xpix, ypix = width, height
-    scale = 0.2  # im mniejsza wartość, tym większe wyspy
-    noise_list = [[1 if noise.noise2(i*scale, j*scale) > 0 else 0 for j in range(xpix)] for i in range(ypix)]
-
-    # Filtrowanko z szumuuuuu
-    filtered_grass = [
-        tuple(point) for point in grass.tolist()
-        if noise_list[int(point[0])][int(point[1])] == 1
-    ]
-
-    return filtered_grass
-
-def grass_cover(width: int, height: int, r: float):
-
-    grass_sampler = PoissonDisk(
-        2,
-        radius=r,
-        ncandidates=30,
-        l_bounds=[0, 0],
-        u_bounds=[width, height],
-    )
-    grass = grass_sampler.random(n=int(width * height / (r * r)))
-
-    return grass
+    points = sampler.random(n=int(width * height / (r * r))).tolist()
+    sampler.reset()
+    return [tuple(point) for point in points]
 
 
-def remove_grass_near_tree(grass: list, trees: list) -> list:
-    """Remove grass points that are too close to a tree.
-
-    Args:
-        grass (list): The list of grass points.
-        trees (list): The list of trees (x, y).
-
-    Returns:
-        list: The filtered list of grass points.
-    """
-    grass_filtered = []
-
-    for grass_point in grass:
-        check = True
-        for tree in trees:
-            if math.dist(tree, grass_point) < 2:
-                check = False
-                break
-        if check:
-            grass_filtered.append(grass_point)
-
-    return grass_filtered
+def remove_grass_near_tree(grass: list[tuple[float, float]], trees: Iterable[tuple[float, float]]) -> list[tuple[float, float]]:
+    proximity = TreeProximityMap(trees)
+    return [point for point in grass if proximity(point[0], point[1]) > 0.0]

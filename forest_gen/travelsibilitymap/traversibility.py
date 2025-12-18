@@ -1,7 +1,9 @@
+from dataclasses import dataclass
+
 import numpy as np
-from trimesh import Trimesh
-from scipy.spatial import KDTree
 from scipy.interpolate import RegularGridInterpolator
+from scipy.spatial import KDTree
+from trimesh import Trimesh
 
 from ..terrain import Terrain
 
@@ -10,6 +12,14 @@ def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
     vertex_normals = mesh.vertex_normals
     slope = np.arccos(np.clip(vertex_normals[:, 2], -1.0, 1.0))
     return slope  # RADIANY!
+
+
+@dataclass
+class TraversabilityConfig:
+    resolution_factor: int = 3
+    max_slope_deg: float = 30.0
+    obstacle_influence_radius: float = 7.0
+    obstacle_penalty: float = 0.45
 
 
 class TraversabilityMapBuilder:

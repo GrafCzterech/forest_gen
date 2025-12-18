@@ -179,5 +179,4 @@ env_forestgen
 
 cache
 
-# models
-models/materials
+outputs

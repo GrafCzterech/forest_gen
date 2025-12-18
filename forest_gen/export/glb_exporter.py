@@ -53,13 +53,6 @@ class GLBExporter(ExportStrategy):
 
         mesh = trimesh.Trimesh(vertices=verts, faces=faces, process=False)
         material = TextureVisuals(image=tex_arr).material
-        # expanded_verts = verts[faces].reshape((-1, 3)).astype(np.float32)
-        # expanded_uvs = uvs[faces].reshape((-1, 2)).astype(np.float32)
-        # expanded_faces = (
-            # np.arange(expanded_verts.shape[0], dtype=np.int32).reshape(-1, 3)
-        # )
-
-        # mesh = trimesh.Trimesh(vertices=expanded_verts, faces=expanded_faces, process=False)
         mesh.visual = TextureVisuals(uv=uvs, material=material)
         mesh.rezero()
         mesh.fix_normals()
