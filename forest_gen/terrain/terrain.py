@@ -25,38 +25,21 @@ class Terrain:
             self.config.transform(y), self.config.transform(x)
         ]
 
-    def to_mesh(self, *, face_varying_uv: bool = False) -> Trimesh:
-        """Create a single Trimesh from the heightmap.
-
-        Args:
-            face_varying_uv: If True, expand UVs to be face-varying which is often
-                required by USD/MDL pipelines so texture coordinates are stored as
-                face-varying primvars.
-
-        Returns:
-            Trimesh: The generated mesh
-        """
-        return heightmap_to_mesh(self, self.config.size, self.config.resolution, face_varying_uv=face_varying_uv)
+    def to_mesh(self) -> Trimesh:
+        return heightmap_to_mesh(self, self.config.size, self.config.resolution)
 
     def to_meshes(
-        self,
-        classify: Callable[[float, float], str] | None = None,
-        *,
-        face_varying_uv: bool = False,
+        self, classify: Callable[[float, float], str] | None = None
     ) -> list[tuple[Trimesh, list[tuple[str, str]]]]:
-        """Create multiple meshes (semantic split) from the heightmap.
-
-        Args:
-            classify: Optional classifier function returning tag for each cell.
-            face_varying_uv: If True, expand UVs to be face-varying for exporter compatibility.
-
-        Returns:
-            list[tuple[Trimesh, list[tuple[str, str]]]]: A list of meshes with tags.
-        """
         return heightmap_to_meshes(
-            self, self.config.size, self.config.resolution, classify, face_varying_uv=face_varying_uv
+            self, self.config.size, self.config.resolution, classify
         )
 
     @property
     def __name__(self):
         return self.__class__.__name__
+
+    @property
+    def size(self) -> tuple[float, float]:
+        """Terrain dimensions in meters (width, height)."""
+        return (self.config.size, self.config.size)
