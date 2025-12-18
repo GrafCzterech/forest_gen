@@ -32,6 +32,7 @@ from .travelsibilitymap import TraversabilityMapBuilder
 
 logger = getLogger(__name__)
 
+
 # this is just a simple placeholder function that classifies the terrain,
 # used for splitting the terrain into semantic classes
 def classify_terrain(x: float, y: float) -> str:
@@ -115,7 +116,14 @@ class ForestGenSpec(SceneSpec):
             .with_moisture_model({})
             .build()
         )
-        terrain_cfg = TerrainConfig(size=self.side, resolution=0.25, scale=4.0, octaves=3, height_scale=5, apply_microrelief=True)
+        terrain_cfg = TerrainConfig(
+            size=self.side,
+            resolution=0.25,
+            scale=4.0,
+            octaves=2,
+            height_scale=2,
+            apply_microrelief=True,
+        )
         terrain_classic = TerrainConfig(self.side, 0.5, height_scale=20)
         terrain = generator.generate(terrain_cfg)
 
@@ -161,7 +169,7 @@ class PlantSpec(AssetSpec):
         AssetList = []
 
         birch = Species(
-            name='Birch',
+            name="Birch",
             max_age=120,
             species_density=0.012,
             reproduction_rate=2,
@@ -173,7 +181,7 @@ class PlantSpec(AssetSpec):
             juvenile_recovery_age=0.18,
         )
         pine = Species(
-            name='Pine',
+            name="Pine",
             max_age=110,
             species_density=0.018,
             reproduction_rate=6,
@@ -211,7 +219,9 @@ class PlantSpec(AssetSpec):
                 AssetList.append(
                     self.create_instance(
                         f"{plant.species.name}_{i}",
-                        model_factory.get_usdz_model_by_name(plant.species.name, random.randint(1,3)),
+                        model_factory.get_usdz_model_by_name(
+                            plant.species.name, random.randint(1, 3)
+                        ),
                         (
                             plant.coords[0],
                             plant.coords[1],
@@ -225,9 +235,7 @@ class PlantSpec(AssetSpec):
         # do the grass simulation
         logger.debug("Generating grass")
 
-        grass = grass_cover(
-            int(terrain.size[0]), int(terrain.size[1]), 0.45
-        )
+        grass = grass_cover(int(terrain.size[0]), int(terrain.size[1]), 0.45)
 
         # old grass distr when we hoped for terrain mesh textures
         #
@@ -244,20 +252,16 @@ class PlantSpec(AssetSpec):
             AssetList.append(
                 self.create_instance(
                     f"Grass_{i}",
-                    model_factory.get_usdz_model_by_name(
-                        "Grass", 1
-                    ),
-                    (plant[0], plant[1], terrain.raw(*plant)-0.1),
-                    (0.0, 0.0, 0.0, 0.0),           # for glb (0.70711, 0.70711, 0.0, 0.0),
+                    model_factory.get_usdz_model_by_name("Grass", 1),
+                    (plant[0], plant[1], terrain.raw(*plant) - 0.1),
+                    (0.0, 0.0, 0.0, 0.0),  # for glb (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "blue", "species": "Grass"},
                 )
             )
 
         # Do the fern simulation
         logger.debug("Generating ferns")
-        unfiltered_ferns = grass_points(
-            int(terrain.size[0]), int(terrain.size[1]), 5.0
-        )
+        unfiltered_ferns = grass_points(int(terrain.size[0]), int(terrain.size[1]), 5.0)
         ferns = remove_grass_near_tree(
             unfiltered_ferns, [plant.coords for plant in state]
         )
@@ -268,7 +272,7 @@ class PlantSpec(AssetSpec):
             AssetList.append(
                 self.create_instance(
                     f"Fern_{i}",
-                    model_factory.get_usdz_model_by_name("Fern", random.randint(1,3)),
+                    model_factory.get_usdz_model_by_name("Fern", random.randint(1, 3)),
                     (plant[0], plant[1], terrain.raw(*plant)),
                     (0.0, 0.0, 0.0, 0.0),
                     {"color": "red", "species": "Fern"},
