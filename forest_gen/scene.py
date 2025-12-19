@@ -1,9 +1,11 @@
 from logging import getLogger
 import math
-import os
+from copy import deepcopy
 import random
 from collections import Counter
 from logging import getLogger
+from opensimplex import noise2
+from trimesh import Trimesh
 
 logger = getLogger(__name__)
 
@@ -16,20 +18,20 @@ from neuroforgelab import (
 
 from .asset_dist import (
     Species,
-    grass_cover,
-    grass_points,
-    remove_grass_near_tree,
 )
 from .assets import PlantModelFactory
 from .forest import ForestBuilder, ForestConfig
 
 # this is sort of a facade file for the whole module
 
-from .terrain import TerrainConfig, TerrainBuilder, Terrain
-from .forest import ForestBuilder, ForestConfig
-from .asset_dist import GrassDistributor, Species, grass_points
 from .assets import PlantModelFactory
 from .travelsibilitymap import TraversabilityConfig, TraversabilityMapBuilder
+
+from forest_gen.asset_dist.understory import UnderstoryDistributor
+from forest_gen.forest import ForestBuilder, ForestConfig
+from forest_gen.terrain import TerrainBuilder, TerrainConfig, Terrain
+from forest_gen.asset_dist import Species
+from forest_gen.asset_dist.grass import GrassDistributor
 
 # i have heard many a voice from vile dissidents that showcase their weakness
 # and complain about how convoluted this file is. As such overt comments
@@ -38,6 +40,61 @@ from .travelsibilitymap import TraversabilityConfig, TraversabilityMapBuilder
 
 # this is just a simple placeholder function that classifies the terrain,
 # used for splitting the terrain into semantic classes
+
+
+#Temp solution
+
+
+forest_params = {
+    'scene_density': 1.2,
+    'simulation_years': 70,
+}
+
+
+grass_params = {
+    'scene_density': 1.35,
+    'patch_scale': 0.10,
+    'hard_radius': 1.0,
+    'falloff_radius': 3.0,
+    'species_density': 0.28,
+    'reproduction_rate': 3,
+    'reproduction_radius': 2.1,
+    'max_age': 8,
+    'radius': 0.6,
+    'simulation_years': forest_params['simulation_years'],
+}
+
+obstacle_params = {
+    'specs': [
+        ('boulder', 2.0, 0.45),
+        ('stump', 1.2, 0.35),
+        ('log', 1.4, 0.20),
+    ],
+    'density': 0.005,
+    'min_distance': 1.8,
+    'seed': 21,
+}
+
+understory_params = {
+    'scene_density': 0.036,
+    'preferred_distance': 5.0,
+    'avoid_radius': 2.2,
+    'falloff_radius': 11.0,
+    'patch_scale': 0.12,
+    'patch_threshold': 0.5,
+    'species_density': 0.026,
+    'reproduction_rate': 1,
+    'reproduction_radius': 6.0,
+    'radius': 2.6,
+    'max_age': 35,
+    'simulation_years': forest_params['simulation_years'],
+}
+
+
+
+
+
+
 def classify_terrain(x: float, y: float) -> str:
     """Classify the terrain based on the x and y coordinates.
 
@@ -211,6 +268,8 @@ class PlantSpec(AssetSpec):
         # do the trees simulation
         logger.debug("Starting Tree simulation")
         state = forest.generate(self.forest_cfg)
+        tree_positions = [plant.coords for plant in state]
+
         logger.debug("Tree simulation finished")
 
         origin_2d = (terrain.origin[0], terrain.origin[1])
@@ -246,10 +305,6 @@ class PlantSpec(AssetSpec):
         # do the grass simulation
         logger.debug("Generating grass")
 
-        grass = grass_cover(
-            int(terrain.size[0]), int(terrain.size[1]), 0.45
-        )
-
         # old grass distr when we hoped for terrain mesh textures
         #
         # unfiltered_grass = grass_points(
@@ -258,9 +313,31 @@ class PlantSpec(AssetSpec):
         # grass = remove_grass_near_tree(
         #     unfiltered_grass, [plant.coords for plant in state]
         # )
+
+        grass_generator = GrassDistributor(
+            terrain,
+            tree_positions,
+            patch_scale=grass_params['patch_scale'],
+            hard_radius=grass_params['hard_radius'],
+            falloff_radius=grass_params['falloff_radius'],
+            max_age=grass_params['max_age'],
+            species_density=grass_params['species_density'],
+            reproduction_rate=grass_params['reproduction_rate'],
+            reproduction_radius=grass_params['reproduction_radius'],
+            radius=grass_params['radius'],
+        )
+        grass_state = grass_generator.generate(
+            ForestConfig(scene_density=grass_params['scene_density'], years=0)
+        )
+        grass_states = []
+        for _ in range(grass_params['simulation_years']):
+            grass_state.run_state(1)
+            grass_states.append(deepcopy(grass_state))
+
+        final_grass_state = grass_states[-1] if grass_states else grass_state    
         logger.debug("Grass generation finished")
 
-        for i, plant in enumerate(grass_state):
+        for i, plant in enumerate(final_grass_state):
             if math.dist(plant.coords, origin_2d) <= self.origin_margin:
                 continue
 
@@ -276,39 +353,40 @@ class PlantSpec(AssetSpec):
                 )
             )
 
-        # Do the fern simulation
-        logger.debug("Generating ferns")
-        unfiltered_ferns = grass_points(
-            int(terrain.size[0]), int(terrain.size[1]), 5.0
-        )
-        ferns = remove_grass_near_tree(
-            unfiltered_ferns, [plant.coords for plant in state]
-        )
-        logger.debug("Ferns generation finished")
+        # Do the understory simulation
+        logger.debug("Generating understory")
 
-        for i, plant in enumerate(ferns):
-            cls = classify_terrain(plant[0], plant[1])
-            AssetList.append(
-                self.create_instance(
-                    f"Fern_{i}",
-                    model_factory.get_usdz_model_by_name("Fern", random.randint(1,3)),
-                    (plant[0], plant[1], terrain.raw(*plant)),
-                    (0.0, 0.0, 0.0, 0.0),
-                    {"color": "red", "species": "Fern"},
-                )
-            )
 
-        # Do the bush simulation
-        logger.debug("Generating bushes")
-        unfiltered_bushes = grass_points(
-            int(terrain.size[0]), int(terrain.size[1]), 3.0
+        understory_generator = UnderstoryDistributor(
+            terrain,
+            tree_positions,
+            preferred_distance=understory_params['preferred_distance'],
+            avoid_radius=understory_params['avoid_radius'],
+            falloff_radius=understory_params['falloff_radius'],
+            patch_scale=understory_params['patch_scale'],
+            patch_threshold=understory_params['patch_threshold'],
+            species_density=understory_params['species_density'],
+            reproduction_rate=understory_params['reproduction_rate'],
+            reproduction_radius=understory_params['reproduction_radius'],
+            radius=understory_params['radius'],
+            max_age=understory_params['max_age'],
         )
-        # bushes = remove_grass_near_tree(
-        #     unfiltered_bushes, [plant.coords for plant in state]
-        # )
-        logger.debug("Bushes generation finished")
 
-        for i, plant in enumerate(unfiltered_bushes):
+        understory_state = understory_generator.generate(
+            ForestConfig(scene_density=understory_params['scene_density'], years=0)
+        )
+
+        understory_states = []
+        for _ in range(understory_params['simulation_years']):
+            understory_state.run_state(1)
+            understory_states.append(deepcopy(understory_state))
+
+        final_understory_state = understory_states[-1] if understory_states else understory_state
+
+        logger.debug("Finished generating understory")
+
+
+        for i, plant in enumerate(final_understory_state):
             cls = classify_terrain(plant[0], plant[1])
             AssetList.append(
                 self.create_instance(
@@ -319,6 +397,7 @@ class PlantSpec(AssetSpec):
                     {"color": "purple", "species": "Bush"},
                 )
             )
+
 
         logger.debug(f"{dict(Counter(ass.name.split('_', 1)[0] for ass in AssetList))}")
         return AssetList

@@ -24,9 +24,6 @@ class PatchyGrassMap:
     def __call__(self, x: float, y: float) -> float:
         return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > 0 else 0.0
 
-from warp import noise
-
-
 class TreeProximityMap:
     """Viability mask that attenuates grass near trees."""
 
