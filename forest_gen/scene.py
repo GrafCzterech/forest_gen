@@ -9,7 +9,7 @@ from trimesh import Trimesh
 
 logger = getLogger(__name__)
 
-from neuroforgelab import (
+from stripe_kit import (
     SceneSpec,
     AssetSpec,
     AssetInstance,
@@ -184,12 +184,12 @@ class ForestGenSpec(SceneSpec):
             .with_moisture_model({})
             .build()
         )
-        terrain_cfg = TerrainConfig(size=self.side, resolution=0.25, scale=4.0, octaves=3, height_scale=5, apply_microrelief=True)
+        terrain_cfg = TerrainConfig(size=self.side, resolution=0.25, scale=4.0, octaves=2, height_scale=2, apply_microrelief=True)
         terrain_classic = TerrainConfig(self.side, 0.5, height_scale=20)
         terrain = generator.generate(terrain_cfg)
 
         return HeightmapTerrain(
-            terrain.to_meshes(classify_terrain, face_varying_uv=True),
+            terrain.to_meshes(classify_terrain),
             (self.origin[0], self.origin[1], terrain(*self.origin) + 1.0),
             self.size,
             terrain,
@@ -315,7 +315,7 @@ class PlantSpec(AssetSpec):
         # )
 
         grass_generator = GrassDistributor(
-            terrain,
+            terrain.raw,
             tree_positions,
             patch_scale=grass_params['patch_scale'],
             hard_radius=grass_params['hard_radius'],
@@ -347,7 +347,7 @@ class PlantSpec(AssetSpec):
                     model_factory.get_usdz_model_by_name(
                         "Grass", 1
                     ),
-                    (plant[0], plant[1], terrain.raw(*plant)-0.1),
+                    (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)-0.1),
                     (0.0, 0.0, 0.0, 0.0),           # for glb (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "blue", "species": "Grass"},
                 )
@@ -358,7 +358,7 @@ class PlantSpec(AssetSpec):
 
 
         understory_generator = UnderstoryDistributor(
-            terrain,
+            terrain.raw,
             tree_positions,
             preferred_distance=understory_params['preferred_distance'],
             avoid_radius=understory_params['avoid_radius'],
@@ -387,12 +387,12 @@ class PlantSpec(AssetSpec):
 
 
         for i, plant in enumerate(final_understory_state):
-            cls = classify_terrain(plant[0], plant[1])
+            cls = classify_terrain(*plant.coords)
             AssetList.append(
                 self.create_instance(
                     f"Bush_{i}",
                     model_factory.get_usdz_model_by_name("Bush", 1),
-                    (plant[0], plant[1], terrain.raw(*plant)),
+                    (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)),
                     (0.0, 0.0, 0.0, 0.0),
                     {"color": "purple", "species": "Bush"},
                 )
