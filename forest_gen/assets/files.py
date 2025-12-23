@@ -56,12 +56,13 @@ class PlantModelFactory:
             )
         return self.models[key]
 
-    def get_usdz_model_by_name(self, name: str, age: int, height_mult: float = 1) -> AssetMesh:
+    def get_usdz_model_by_name(self, name: str, age: int, scale_mult: float = 1) -> AssetMesh:
         """Get the model for a given plant with usdz extension.
 
         Args:
             name (str): The name of the plant species.
             age (int): The age of the plant.
+            scale_mult (float): Scale multiplier for the model.
 
         Returns:
             AssetMesh: Mesh of loaded asset named "name_age".
@@ -73,7 +74,7 @@ class PlantModelFactory:
             logger.debug(f"Loading model for {name} age {age}")
             self.models[key] = UniversalMesh(
                 f"{MODEL_CACHE_PATH}/{name}_{age}.usdz",
-                scale=(self.scale, self.scale, self.scale * height_mult),
+                scale=(self.scale * scale_mult, self.scale * scale_mult, self.scale * scale_mult),
                                             # 43 sekundy przy 200 modelach Grassbed_1.usdz
                                             # 21 sekund przy ~300 modelach GrassBed_1.usdz
                                             # 176 sekund przy 5100 modelach GrassBed_1.usdz

@@ -423,7 +423,7 @@ class PlantSpec(AssetSpec):
                 AssetList.append(
                     self.create_instance(
                         f"Rock_{i}",
-                        model_factory.get_usdz_model_by_name("Rock", random.randint(1,7)),
+                        model_factory.get_usdz_model_by_name("Rock", random.randint(1,7), 1.5),
                         (obs.coords[0], obs.coords[1], terrain.raw(*obs.coords)),
                         (0.0, 0.0, 0.0, 0.0),
                         {"color": "red", "species": "obstacle"},
