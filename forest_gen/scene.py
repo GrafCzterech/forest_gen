@@ -32,6 +32,7 @@ from forest_gen.forest import ForestBuilder, ForestConfig
 from forest_gen.terrain import TerrainBuilder, TerrainConfig, Terrain
 from forest_gen.asset_dist import Species
 from forest_gen.asset_dist.grass import GrassDistributor
+from forest_gen.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
 
 # i have heard many a voice from vile dissidents that showcase their weakness
 # and complain about how convoluted this file is. As such overt comments
@@ -66,9 +67,9 @@ grass_params = {
 
 obstacle_params = {
     'specs': [
-        ('boulder', 2.0, 0.45),
+        ('rock', 2.0, 0.55),
         ('stump', 1.2, 0.35),
-        ('log', 1.4, 0.20),
+        ('fallen_trunk', 1.4, 0.10),
     ],
     'density': 0.005,
     'min_distance': 1.8,
@@ -89,7 +90,6 @@ understory_params = {
     'max_age': 35,
     'simulation_years': forest_params['simulation_years'],
 }
-
 
 
 
@@ -397,6 +397,38 @@ class PlantSpec(AssetSpec):
                     {"color": "purple", "species": "Bush"},
                 )
             )
+
+
+
+        # Do the obstacle simulation
+        logger.debug("Generating obstacles")
+
+        obstacle_builder = (
+            ObstacleBuilder()
+            .with_specs(tuple(ObstacleSpec(name, radius=radius, weight=weight) for name, radius, weight in obstacle_params['specs']))
+            .with_seed(obstacle_params['seed'])
+        )
+        obstacle_generator = obstacle_builder.build()
+        obstacle_config = ObstacleConfig(size=terrain.size, density=obstacle_params['density'], min_distance=obstacle_params['min_distance'])
+        obstacles = obstacle_generator.generate(obstacle_config)
+
+
+
+
+        logger.debug("Finished generating obstacles")
+
+
+        for i, obs in enumerate(obstacles):
+                cls = classify_terrain(*obs.coords)
+                AssetList.append(
+                    self.create_instance(
+                        f"Rock_{i}",
+                        model_factory.get_usdz_model_by_name("Rock", random.randint(1,7)),
+                        (obs.coords[0], obs.coords[1], terrain.raw(*obs.coords)),
+                        (0.0, 0.0, 0.0, 0.0),
+                        {"color": "red", "species": "obstacle"},
+                    )
+                )
 
 
         logger.debug(f"{dict(Counter(ass.name.split('_', 1)[0] for ass in AssetList))}")
