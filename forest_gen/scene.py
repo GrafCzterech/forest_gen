@@ -55,14 +55,14 @@ forest_params = {
 grass_params = {
     'scene_density': 1.35,
     'patch_scale': 0.10,
-    'hard_radius': 1.0,
-    'falloff_radius': 3.0,
-    'species_density': 0.28,
+    'hard_radius': 0.5,
+    'falloff_radius': 2.0,
+    'species_density': 4.28,
     'reproduction_rate': 3,
-    'reproduction_radius': 2.1,
-    'max_age': 8,
-    'radius': 0.6,
-    'simulation_years': forest_params['simulation_years'],
+    'reproduction_radius': 3,
+    'max_age': 16,
+    'radius': 0.3,
+    'simulation_years': 20,
 }
 
 obstacle_params = {
@@ -338,8 +338,9 @@ class PlantSpec(AssetSpec):
         logger.debug("Grass generation finished")
 
         for i, plant in enumerate(final_grass_state):
-            if math.dist(plant.coords, origin_2d) <= self.origin_margin:
-                continue
+            # Skip grass near the origin
+            # if math.dist(plant.coords, origin_2d) <= self.origin_margin:
+            #     continue
 
             AssetList.append(
                 self.create_instance(
