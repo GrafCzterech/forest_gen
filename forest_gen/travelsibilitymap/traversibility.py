@@ -7,8 +7,24 @@ from trimesh import Trimesh
 
 from ..terrain import Terrain
 
+"""
+Traversability map construction utilities.
+
+Computes slope-based traversability from terrain meshes and applies
+additional penalties from spatial obstacles.
+"""
 
 def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
+    """
+    Compute per-vertex slope angles from a mesh.
+
+    Slope is derived from the Z component of vertex normals.
+
+    :param mesh: Terrain mesh.
+    :type mesh: trimesh.Trimesh
+    :return: Slope angles in radians.
+    :rtype: numpy.ndarray
+    """
     vertex_normals = mesh.vertex_normals
     slope = np.arccos(np.clip(vertex_normals[:, 2], -1.0, 1.0))
     return slope  # RADIANY!
@@ -16,25 +32,38 @@ def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
 
 @dataclass
 class TraversabilityConfig:
+    """
+    Configuration parameters for traversability computation.
+    """
     resolution_factor: int = 3
+    """Upsampling factor relative to terrain resolution."""
     max_slope_deg: float = 30.0
+    """Maximum traversable slope in degrees."""
     obstacle_influence_radius: float = 7.0
+    """Radius of obstacle influence."""
     obstacle_penalty: float = 0.45
+    """Maximum traversability penalty per obstacle."""
 
 
 class TraversabilityMapBuilder:
+    """
+    Build a high-resolution traversability map from terrain data.
+    """
     def __init__(
         self,
         terrain: Terrain,
         resolution_factor: int = 2,
         max_slope_deg: float = 30.0,
     ):
-        """Initializes the TraversabilityMapBuilder
+        """
+        Initialize the traversability map builder.
 
-        Args:
-            terrain (Terrain): The terrain instance to compute the traversability map for.
-            resolution_factor (int, optional): The resolution factor of the traversability map. Defaults to 2.
-            max_slope_deg (float, optional): The maximum slope in degrees. Defaults to 30.0.
+        :param terrain: Terrain used for slope computation.
+        :type terrain: Terrain
+        :param resolution_factor: Upsampling factor for the output map.
+        :type resolution_factor: int
+        :param max_slope_deg: Maximum traversable slope in degrees.
+        :type max_slope_deg: float
         """
         size = terrain.config.size
         self.high_res_size = int(round(size * resolution_factor))
@@ -69,12 +98,18 @@ class TraversabilityMapBuilder:
         obstacle_influence_radius: float = 10.0,
         obstacle_penalty: float = 0.5,
     ) -> None:
-        """Adds an obstacle score to the traversability map.
+        """
+        Apply obstacle-based penalties to the traversability map.
 
-        Args:
-            obstacles (list[tuple[float, float]]): The list of obstacles. Really a list of 2D points.
-            obstacle_influence_radius (float): The radius of influence of each obstacle.
-            obstacle_penalty (float): The penalty for each obstacle.
+        Each obstacle reduces traversability within a given radius,
+        with penalty decreasing linearly with distance.
+
+        :param obstacles: Obstacle positions as ``(x, y)`` coordinates.
+        :type obstacles: list[tuple[float, float]]
+        :param obstacle_influence_radius: Radius of obstacle influence.
+        :type obstacle_influence_radius: float
+        :param obstacle_penalty: Maximum penalty applied near obstacles.
+        :type obstacle_penalty: float
         """
         tree_map = np.ones((self.high_res_size, self.high_res_size))
         tree_points = np.array(obstacles)
@@ -104,4 +139,10 @@ class TraversabilityMapBuilder:
         self.score *= tree_map
 
     def get_score(self) -> np.ndarray:
+        """
+        Return the final traversability score map.
+
+        :return: Traversability values in ``[0.0, 1.0]``.
+        :rtype: numpy.ndarray
+        """
         return np.clip(self.score, 0.0, 1.0)

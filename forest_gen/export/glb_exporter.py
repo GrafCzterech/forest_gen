@@ -8,7 +8,7 @@ from pathlib import Path
 
 class GLBExporter(ExportStrategy):
     """
-    Exports terrain as a GLB mesh with a random texture.
+    Concrete Strategy exporting terrain as a textured GLB mesh.
     """
 
     def __init__(
@@ -22,6 +22,18 @@ class GLBExporter(ExportStrategy):
         self.seed = seed
 
     def export(self, heightmap: np.ndarray, path: str) -> None:
+        """
+        Export a heightmap as a GLB mesh with a generated texture.
+
+        Vertices are laid out on a regular grid using the configured
+        resolution, heights are scaled by ``max_elevation``, and a
+        random RGB texture is generated for visualization.
+
+        :param heightmap: Heightmap array with values in ``[0.0, 1.0]``.
+        :type heightmap: numpy.ndarray
+        :param path: Output ``.glb`` file path.
+        :type path: str
+        """
         rows, cols = heightmap.shape
         rng = np.random.default_rng(self.seed)
         tex_arr = rng.integers(0, 255, size=(rows, cols, 3), dtype=np.uint8)

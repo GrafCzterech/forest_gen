@@ -4,13 +4,18 @@ import numpy as np
 
 class MicroreliefStrategy(ABC):
     """
-    Interface for microrelief application.
-
-    Methods:
-        apply: Apply microrelief to a heightmap.
+    Strategy interface for applying microrelief to terrain heightmaps.
     """
+
 
     @abstractmethod
     def apply(self, heightmap: np.ndarray) -> np.ndarray:
-        """Apply microrelief to a heightmap."""
+        """
+        Apply micro-scale terrain variation to a heightmap.
+
+        :param heightmap: Base terrain heightmap.
+        :type heightmap: numpy.ndarray
+        :return: Heightmap with microrelief applied.
+        :rtype: numpy.ndarray
+        """
         pass

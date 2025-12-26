@@ -11,10 +11,17 @@ from .obstacle_config import ObstacleConfig, ObstacleSpec, default_obstacle_spec
 
 @dataclass
 class ObstacleGenerator:
-    """Generate random navigational obstacles across a terrain size."""
+    """
+    Generate random navigational obstacles within a bounded area.
+
+    Obstacles are sampled according to obstacle specifications and
+    placed with minimum distance constraints.
+    """
 
     specs: tuple[ObstacleSpec, ...] | None = None
+    """Optional obstacle specifications overriding defaults."""
     rng: random.Random = random.Random()
+    """Base random number generator."""
 
     def _resolve_specs(self, config: ObstacleConfig) -> tuple[ObstacleSpec, ...]:
         if config.specs:
@@ -42,6 +49,15 @@ class ObstacleGenerator:
         return True
 
     def generate(self, config: ObstacleConfig) -> list[Obstacle]:
+        """ 
+        Generate obstacles according to the given configuration.
+
+        :param config: Obstacle generation configuration.
+        :type config: ObstacleConfig
+        :return: Generated obstacles.
+        :rtype: list[Obstacle]
+        """
+        ...
         rng = self._ensure_rng(config.seed)
         specs = self._resolve_specs(config)
         weights = [spec.weight for spec in specs]

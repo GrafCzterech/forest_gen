@@ -10,8 +10,10 @@ from .terrain_viability import TerrainViabilityMap
 
 
 class DistributionBuilder:
-    """Fluent builder mirroring the Terrain/Forest construction pattern."""
+    """
+    Fluent builder for configuring a plant distribution simulation.
 
+    """
     def __init__(self):
         self._species: dict[str, set[Species]] = {}
         self._size: tuple[float, float] = (100.0, 100.0)
@@ -21,14 +23,40 @@ class DistributionBuilder:
         self._max_population: int | None = None
 
     def with_size(self, size: tuple[float, float]) -> "DistributionBuilder":
+        """
+        Set the simulation area size.
+
+        :param size: Simulation area ``(width, height)``.
+        :type size: tuple[float, float]
+        :return: Builder instance.
+        :rtype: DistributionBuilder
+        """
         self._size = size
         return self
 
     def with_max_population(self, max_population: int | None) -> "DistributionBuilder":
+        """
+        Set a global population cap.
+
+        :param max_population: Maximum allowed population or ``None``.
+        :type max_population: int or None
+        :return: Builder instance.
+        :rtype: DistributionBuilder
+        """
         self._max_population = max_population
         return self
 
     def add_species(self, kind: str, species: Species) -> "DistributionBuilder":
+        """
+        Register a species.
+
+        :param kind: Species group identifier.
+        :type kind: str
+        :param species: Species specification.
+        :type species: Species
+        :return: Builder instance.
+        :rtype: DistributionBuilder
+        """
         self._species.setdefault(kind, set()).add(species)
         return self
 
@@ -38,6 +66,18 @@ class DistributionBuilder:
         resolution: float,
         combine: Callable[[Mapping[str, float]], float] | None = None,
     ) -> "DistributionBuilder":
+        """
+        Apply terrain-based viability modifiers.
+
+        :param layers: Named terrain layers sampled for viability.
+        :type layers: Mapping[str, numpy.ndarray]
+        :param resolution: Spatial resolution of the layers.
+        :type resolution: float
+        :param combine: Optional layer-combination function.
+        :type combine: Callable[[Mapping[str, float]], float] or None
+        :return: Builder instance.
+        :rtype: DistributionBuilder
+        """
         self._terrain_layers = layers
         self._layer_combiner = combine
         self._layer_resolution = resolution
@@ -62,6 +102,12 @@ class DistributionBuilder:
                 sp.viability_map = wrapped
 
     def build(self) -> DistributionGenerator:
+        """
+        Construct the distribution generator.
+
+        :return: Configured distribution generator.
+        :rtype: DistributionGenerator
+        """
         self._apply_viability_layers()
         simulation = Simulation(self._size, self._species)
         return DistributionGenerator(simulation, max_population=self._max_population)

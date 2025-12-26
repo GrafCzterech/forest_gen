@@ -15,35 +15,54 @@ MODEL_CACHE_PATH = os.path.abspath("../forest-gen/models")
 EXTENSION = "glb"
 
 
+"""
+Plant model loading and caching utilities.
+
+Provides a stable facade for loading plant asset meshes while hiding
+asset format and caching details.
+"""
+
 # verbose? yeah but necessary cuz CACHING
 class PlantModelFactory:
-    """A factory for creating plant models."""
+    """
+    Factory for loading and caching plant asset meshes.
 
+    Acts as a facade over asset loading to decouple simulation logic
+    from concrete asset formats and caching behavior.
+    """
     def __init__(self, scale: float = 0.1):
-        """Initialize the factory."""
+        """
+        Initialize the model factory.
+
+        :param scale: Base scale applied to loaded models.
+        :type scale: float
+        """
         self.models: dict[tuple[str, int], AssetMesh] = {}
         self.scale = scale
 
     def get_model(self, plant: Plant) -> AssetMesh:
-        """Get the model for a given plant.
+        """
+        Retrieve the asset model for a plant instance.
 
-        Args:
-            plant (Plant): The plant to get the model for.
-
-        Returns:
-            AssetMesh: Mesh of loaded asset.
+        :param plant: Plant instance.
+        :type plant: Plant
+        :return: Loaded asset mesh.
+        :rtype: AssetMesh
         """
         return self.get_model_by_name(plant.species.name, plant.age)
 
     def get_model_by_name(self, name: str, age: int) -> AssetMesh:
-        """Get the model for a given plant.
+        """
+        Retrieve or load a plant model by species name and age.
 
-        Args:
-            name (str): The name of the plant species.
-            age (int): The age of the plant.
+        Models are cached by ``(name, age)`` to avoid repeated loads.
 
-        Returns:
-            AssetMesh: Mesh of loaded asset named "name_age".
+        :param name: Species name.
+        :type name: str
+        :param age: Plant age.
+        :type age: int
+        :return: Loaded asset mesh.
+        :rtype: AssetMesh
         """
 
         key = (name, age)
@@ -57,15 +76,17 @@ class PlantModelFactory:
         return self.models[key]
 
     def get_usdz_model_by_name(self, name: str, age: int, scale_mult: float = 1) -> AssetMesh:
-        """Get the model for a given plant with usdz extension.
+        """
+        Retrieve or load a USDZ plant model by species name and age.
 
-        Args:
-            name (str): The name of the plant species.
-            age (int): The age of the plant.
-            scale_mult (float): Scale multiplier for the model.
-
-        Returns:
-            AssetMesh: Mesh of loaded asset named "name_age".
+        :param name: Species name.
+        :type name: str
+        :param age: Plant age.
+        :type age: int
+        :param scale_mult: Additional scale multiplier.
+        :type scale_mult: float
+        :return: Loaded asset mesh.
+        :rtype: AssetMesh
         """
 
         key = (name, age)

@@ -2,9 +2,24 @@ import numpy as np
 
 
 class FlowAccumulator:
-    """D8 single-flow accumulation."""
+    """
+    D8 single-flow accumulation model.
 
+    Computes flow accumulation using the D8 algorithm, where each cell
+    drains to its single steepest downslope neighbor.
+    """
     def compute(self, hm: np.ndarray) -> np.ndarray:
+        """
+        Compute D8 flow accumulation from a heightmap.
+
+        Each cell contributes a unit flow to itself and all downstream
+        cells along the steepest descent path.
+
+        :param hm: Terrain heightmap.
+        :type hm: numpy.ndarray
+        :return: Flow accumulation array.
+        :rtype: numpy.ndarray
+        """
         rows, cols = hm.shape
         dirs = [
             (-1, -1),

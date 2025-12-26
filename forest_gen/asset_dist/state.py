@@ -14,17 +14,27 @@ from .definitions import Species, Plant
 
 
 class SimulationState:
-    """A simulation state used to store the plants in the simulation."""
+    """
+    Mutable plant population state with spatial indexing.
+
+    Stores plants in a coarse grid to accelerate neighborhood queries and
+    supports advancing the simulation in discrete yearly steps.
+    """
 
     def __init__(
         self, plants: Iterable[Plant], size: tuple[float, float], div: int = 10
     ):
-        """Initialize the simulation state.
-
-        Args:
-            plants (Iterable[Plant]): Plants to add to the simulation state.
-            size (tuple[float, float]): Size of the simulation state.
         """
+        Initialize a simulation state.
+
+        :param plants: Initial plants to insert.
+        :type plants: Iterable[Plant]
+        :param size: Simulation area size ``(width, height)``.
+        :type size: tuple[float, float]
+        :param div: Number of grid divisions per axis for spatial indexing.
+        :type div: int
+        """
+       
         self.cell_width = size[0] / div
         self.cell_height = size[1] / div
         self.grid_width = int(size[0] / self.cell_width)
@@ -38,13 +48,13 @@ class SimulationState:
             self.add(copy(plant))
 
     def get_cell(self, coords: tuple[float, float]) -> tuple[int, int]:
-        """Get the cell coordinates for the given coordinates.
+        """
+        Map world coordinates to a grid cell index.
 
-        Args:
-            coords (tuple[float, float]): Coordinates of the plant.
-
-        Returns:
-            tuple[int, int]: Cell coordinates.
+        :param coords: World-space coordinates ``(x, y)``.
+        :type coords: tuple[float, float]
+        :return: Cell indices ``(cx, cy)``.
+        :rtype: tuple[int, int]
         """
         x = int(coords[0] / self.cell_width)
         y = int(coords[1] / self.cell_height)
@@ -55,16 +65,19 @@ class SimulationState:
         coords_or_plant: Plant | tuple[float, float],
         radius: float | None = None,
     ) -> chain[Plant]:
-        """Get the plants in a radius around the given coordinates or Plant.
+        """
+        Iterate plants in cells intersecting a neighborhood radius.
 
-        Args:
-            coords_or_plant: Coordinates tuple or Plant instance.
-            radius: Optional radius to search for plants. If ``coords_or_plant``
-                is a :class:`Plant` and ``radius`` is ``None`` its species
-                radius is used.
+        If a :class:`Plant` is passed and ``radius`` is ``None``, the plant's
+        species radius is used.
 
-        Returns:
-            chain[Plant]: Plants in the radius around the given coordinates.
+        :param coords_or_plant: Plant or world-space coordinates.
+        :type coords_or_plant: Plant | tuple[float, float]
+        :param radius: Search radius (required when passing coordinates).
+        :type radius: float or None
+        :return: Nearby plants (not distance-filtered).
+        :rtype: itertools.chain[Plant]
+        :raises TypeError: If coordinates are passed without ``radius``.
         """
         if isinstance(coords_or_plant, Plant):
             coords = coords_or_plant.coords
@@ -90,44 +103,41 @@ class SimulationState:
         )
 
     def get_nearby_plant(self, plant: Plant) -> chain[Plant]:
-        """Get the plants in a radius around the given plant.
+        """
+        Shortcut for neighborhood query around a plant.
 
-        Args:
-            plant (Plant): Plant to search for.
-
-        Returns:
-            chain[Plant]: Plants in the radius around the given plant.
+        :param plant: Reference plant.
+        :type plant: Plant
+        :return: Nearby plants.
+        :rtype: itertools.chain[Plant]
         """
         return self.get_nearby(plant.coords, plant.species.radius)
 
     def remove(self, plant: Plant) -> None:
-        """Remove a plant from the simulation state.
+        """
+        Remove a plant from the state.
 
-        Args:
-            plant (Plant): Plant to remove.
+        :param plant: Plant to remove.
+        :type plant: Plant
         """
         x, y = self.get_cell(plant.coords)
         self.map[x][y].remove(plant)
 
     def add(self, plant: Plant) -> None:
-        """Add a plant to the simulation state.
+        """
+        Add a plant to the state.
 
-        Args:
-            plant (Plant): Plant to add.
+        :param plant: Plant to add.
+        :type plant: Plant
         """
         x, y = self.get_cell(plant.coords)
         self.map[x][y].append(plant)
 
     def __iter__(self) -> chain[Plant]:
-        """Iterate over the plants in the simulation state.
-
-        Returns:
-            chain[Plant]: Plants in the simulation state.
-        """
+ 
         return chain.from_iterable(chain.from_iterable(self.map))
 
     def __len__(self) -> int:
-        """Return number of plants in the simulation state."""
         return sum(len(cell) for row in self.map for cell in row)
 
     def _evaluate_seed(
@@ -136,19 +146,21 @@ class SimulationState:
         pop_counter: dict[Species, int],
         total_population: int,
     ) -> tuple[bool, list[Plant]]:
-        """Evaluate whether a seed can be added to the simulation.
+        """
+        Evaluate whether a candidate seed can be inserted.
 
-        This function batches spatial and viability checks to reduce Python
-        overhead when working with large plant populations.
+        Performs overlap checks against nearby plants and compares
+        population-weighted viability to decide acceptance and possible
+        removals.
 
-        Args:
-            new_plant: The candidate plant to insert.
-            pop_counter: Population counts for the current year.
-            total_population: Total population for the current year.
-
-        Returns:
-            A tuple containing a viability flag and the plants that should be
-            removed if the seed is viable.
+        :param new_plant: Candidate plant.
+        :type new_plant: Plant
+        :param pop_counter: Population counts for the current step.
+        :type pop_counter: dict[Species, int]
+        :param total_population: Total population for the current step.
+        :type total_population: int
+        :return: ``(accepted, removable)`` where ``removable`` are displaced plants.
+        :rtype: tuple[bool, list[Plant]]
         """
 
         nearby_plants = tuple(self.get_nearby_plant(new_plant))
@@ -191,13 +203,13 @@ class SimulationState:
     def run_state(
         self, num_years: int, max_population: int | None = None
     ) -> None:
-        """Run the simulation state for a given number of years.
+        """
+        Advance the simulation by a number of years.
 
-        Args:
-            num_years (int): Number of years to run the simulation state.
-            max_population (int | None): Optional cap on the population size. If
-                provided the simulation stops spawning new plants once the
-                number of plants reaches this limit.
+        :param num_years: Number of years to simulate.
+        :type num_years: int
+        :param max_population: Optional population cap.
+        :type max_population: int or None
         """
         for year in range(num_years):
             logger.debug(f"Year {year + 1}/{num_years}")

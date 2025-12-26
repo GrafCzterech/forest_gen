@@ -14,8 +14,11 @@ from .terrain import Terrain
 @dataclass
 class TerrainGenerator:
     """
-    Orchestrates terrain creation using noise, microrelief,
-    hydrology, and moisture models, then exports via an ExportStrategy.
+    High-level terrain generation orchestrator.
+
+    Coordinates noise generation, optional microrelief, hydrology,
+    slope/aspect analysis, and moisture computation to produce
+    a complete :class:`Terrain`.
     """
 
     noise: NoiseStrategy
@@ -23,6 +26,14 @@ class TerrainGenerator:
     moisture_model: MoistureModel
 
     def generate(self, config: TerrainConfig) -> Terrain:
+        """
+        Generate a terrain from the given configuration.
+
+        :param config: Terrain generation configuration.
+        :type config: TerrainConfig
+        :return: Generated terrain data container.
+        :rtype: Terrain
+        """
         hm = self.noise.generate(config)
         hm = self.micro.apply(hm) if config.apply_microrelief else hm
         flow = FlowAccumulator().compute(hm)

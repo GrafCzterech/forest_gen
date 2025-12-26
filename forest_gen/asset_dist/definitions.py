@@ -5,34 +5,51 @@ import math
 
 from opensimplex import OpenSimplex
 
-# the whole algorithm utilizes classes laid out here
+"""
+Plant species and individual simulation primitives.
+
+Defines species parameters, individual plant state, and spatial
+viability evaluation used by the vegetation simulation.
+"""
 
 
 @dataclass
 class ViabilityMap:
-    """A function that classifies the viability of the plant in the given location."""
-
+    """
+    Callable spatial viability function based on procedural noise.
+    """
     def __init__(self, eps: float = 0.1):
 
         self.noise = OpenSimplex(random.randint(0, 1000))
         self.eps = eps
 
     def __call__(self, x: float, y: float) -> float:
+        """
+        Evaluate spatial viability at world coordinates.
+
+        :param x: X coordinate.
+        :type x: float
+        :param y: Y coordinate.
+        :type y: float
+        :return: Viability value in ``[0.0, 1.0]``.
+        :rtype: float
+        """
         return self.noise.noise2(x / self.eps, y / self.eps) * 0.5 + 0.5
 
 
 @dataclass
 class Species:
-    """A species specification"""
-
+    """
+    Specification describing biological parameters of a plant species.
+    """
     name: str
     max_age: int
-    """Maximum age of the plant."""
+    """Maximum lifespan."""
     species_density: float = 0.02
     """Target density in plants per square meter used for the initial number of
     plants in the simulation."""
     reproduction_rate: int = 5
-    """Maximum number of seeds produced by a plant in one year."""
+    """Maximum number of seeds per year."""
     reproduction_radius: float = 20.0
     """Radius in which the seeds can be planted."""
     radius: float = 0.5
@@ -40,10 +57,11 @@ class Species:
     viability_map: Callable[[float, float], float] = field(
         default_factory=ViabilityMap
     )
+    """Spatial viability function."""
     juvenile_mortality_depth: float = 0.4
-    """Peak reduction in early-life viability (0-1)."""
+    """Peak early-life viability reduction."""
     juvenile_mortality_peak: float = 0.05
-    """Normalized age of highest juvenile mortality risk."""
+    """Normalized age of maximum juvenile mortality."""
     juvenile_mortality_width: float = 0.03
     """Spread of the juvenile mortality spike as a fraction of max age."""
     juvenile_recovery_age: float = 0.2
@@ -67,15 +85,21 @@ class Species:
 # radius for tree is its minimal distance from other trees
 @dataclass
 class Plant:
+    """
+    Individual plant instance in the simulation.
+    """
     coords: tuple[float, float]
+    """World-space coordinates."""
     species: Species
+    """Species specification."""
     age: int
+    """Plant age in simulation steps."""
 
     def vt(self) -> float:
         """Viability of the plant.
 
-        Returns:
-            float: Viability of the plant. Value between 0 and 1.
+        :return: Viability value in ``[0.0, 1.0]``.
+        :rtype: float
         """
         sp = self.species
         if sp.max_age <= 0:
@@ -114,15 +138,18 @@ class Plant:
         return max(0.0, min(1.0, viability))
 
     def vt_prim(self, a: dict[Species, int], sum_a: int) -> float:
-        """Modified viability of the plant.
-        This function takes into account the population of the species, and the
-        viability of the plant in it's location.
+        """
+        Compute population-weighted viability.
 
-        Args:
-            a (dict[Species, int]): Population of the species.
+        Combines intrinsic viability, spatial viability, and relative
+        population size.
 
-        Returns:
-            float: Modified viability of the plant. Value between 0 and 1.
+        :param a: Population counts per species.
+        :type a: dict[Species, int]
+        :param sum_a: Total population size.
+        :type sum_a: int
+        :return: Modified viability value.
+        :rtype: float
         """
         # TODO the problem currently is that this is sort of unrealistic with population being global
         return (
@@ -133,10 +160,11 @@ class Plant:
         )
 
     def seed(self) -> Iterable["Plant"]:
-        """Allow the plant to reproduce.
+        """
+        Generate offspring plants via random dispersal.
 
-        Returns:
-            Iterable[Plant]: A collection of new plants.
+        :return: Newly generated plants.
+        :rtype: Iterable[Plant]
         """
         res = []
         for _ in range(random.randint(0, self.species.reproduction_rate)):

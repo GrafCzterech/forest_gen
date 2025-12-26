@@ -10,16 +10,23 @@ from .state import SimulationState
 
 
 class Simulation:
-    """A simulation of a forest used to generate realistic plant positions."""
+    """
+    Forest simulation initializer.
+
+    Generates an initial plant distribution based on species parameters
+    and scene density, producing a populated :class:`SimulationState`.
+    """
 
     def __init__(
         self, size: tuple[float, float], species: dict[str, set[Species]]
     ):
-        """Initialize the simulation.
+        """
+        Initialize the simulation definition.
 
-        Args:
-            size (int): Size of the simulation in meters.
-            species (dict[str, set[Species]]): Species, categorized by type.
+        :param size: Simulation area size ``(width, height)``.
+        :type size: tuple[float, float]
+        :param species: Species grouped by category.
+        :type species: dict[str, set[Species]]
         """
         self.size = size
         self.species = species
@@ -29,14 +36,17 @@ class Simulation:
         self,
         scene_density: float,
     ) -> SimulationState:
-        """Create a new simulation state.
+        """
+        Create a new initial simulation state.
 
-        Args:
-            scene_density (float): Base density multiplier for the entire scene.
-                This value is multiplied by each species' ``species_density``
-                (in plants per square meter).
-        Returns:
-            SimulationState: A new simulation state.
+        Plants are placed using Poisson disk sampling per species,
+        scaled by scene density and species-specific target density.
+        Larger-radius species are placed first to reduce overlap.
+
+        :param scene_density: Global density multiplier.
+        :type scene_density: float
+        :return: Initialized simulation state.
+        :rtype: SimulationState
         """
         instances: list[Plant] = []
         # species_list = [

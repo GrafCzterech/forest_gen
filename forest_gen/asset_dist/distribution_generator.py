@@ -13,8 +13,14 @@ class DistributionGenerator:
         self._max_population = max_population
 
     def generate(self, config: DistributionConfig) -> SimulationState:
-        """Run the configured simulation and return the resulting state."""
+        """
+        Run the simulation using the given configuration.
 
+        :param config: Distribution simulation configuration.
+        :type config: DistributionConfig
+        :return: Final simulation state.
+        :rtype: SimulationState
+        """
         state = self._simulation.new_state(config.scene_density)
         if config.years:
             max_population = config.max_population

@@ -14,19 +14,36 @@ from .state import SimulationState
 from ..forest import ForestBuilder, ForestConfig
 from ..terrain import Terrain
 
-class PatchyGrassMap:
-    """Simple patchiness map driven by simplex noise."""
+"""
+Grass distribution utilities built on the forest simulation pipeline.
 
+Provides spatial viability maps and a distributor that reuses the
+existing Simulation / ForestBuilder infrastructure.
+"""
+
+class PatchyGrassMap:
+    """
+    Binary patchiness mask driven by simplex noise.
+    """
+        
     def __init__(self, scale: float = 0.2, seed: int | None = None):
         self.scale = scale
         self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
 
     def __call__(self, x: float, y: float) -> float:
+        """
+        Evaluate patch presence at world coordinates.
+
+        :return: ``1.0`` inside grass patches, otherwise ``0.0``.
+        :rtype: float
+        """
         return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > 0 else 0.0
 
 class TreeProximityMap:
-    """Viability mask that attenuates grass near trees."""
-
+    """
+    Viability mask attenuating grass near trees.
+    """
+    
     def __init__(
         self,
         tree_positions: Iterable[tuple[float, float]],
@@ -38,6 +55,12 @@ class TreeProximityMap:
         self.falloff_radius = max(falloff_radius, hard_radius)
 
     def __call__(self, x: float, y: float) -> float:
+        """
+        Evaluate proximity-based viability at world coordinates.
+
+        :return: Viability multiplier in ``[0.0, 1.0]``.
+        :rtype: float
+        """
         if not self.tree_positions:
             return 1.0
 
@@ -50,8 +73,9 @@ class TreeProximityMap:
         return (closest - self.hard_radius) / (self.falloff_radius - self.hard_radius)
 
 class GrassDistributor:
-    """Distribute grass using the same Simulation patterns as trees."""
-
+    """
+    Distribute grass using the standard forest simulation pipeline.
+    """
     def __init__(
         self,
         terrain: Terrain,
@@ -113,8 +137,14 @@ class GrassDistributor:
         )
 
     def generate(self, config: ForestConfig) -> SimulationState:
-        """Generate grass plants following the Simulation pipeline."""
+        """
+        Generate grass distribution for the given forest configuration.
 
+        :param config: Forest generation configuration.
+        :type config: ForestConfig
+        :return: Resulting simulation state.
+        :rtype: SimulationState
+        """
         builder = (
             ForestBuilder()
             .with_size((self.terrain.config.size, self.terrain.config.size))
@@ -131,6 +161,11 @@ class GrassDistributor:
 
 # Legacy helpers kept for quick sampling in notebooks or other assets.
 def grass_points(width: int, height: int, r: float) -> list[tuple[float, float]]:
+    """
+    Generate Poisson-distributed grass points.
+
+    Intended for quick sampling or prototyping.
+    """
     sampler = PoissonDisk(
         2,
         radius=r,
@@ -144,5 +179,8 @@ def grass_points(width: int, height: int, r: float) -> list[tuple[float, float]]
 
 
 def remove_grass_near_tree(grass: list[tuple[float, float]], trees: Iterable[tuple[float, float]]) -> list[tuple[float, float]]:
+    """
+    Filter grass points near trees using proximity masking.
+    """
     proximity = TreeProximityMap(trees)
     return [point for point in grass if proximity(point[0], point[1]) > 0.0]

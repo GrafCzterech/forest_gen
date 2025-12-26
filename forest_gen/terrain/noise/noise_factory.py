@@ -7,12 +7,23 @@ from typing import Literal
 
 class NoiseFactory:
     """
-    Factory for creating NoiseStrategy instances by name.
+    Factory for creating :class:`NoiseStrategy` instances by name.
+
+    Encapsulates strategy selection logic and decouples callers from
+    concrete noise implementations.
     """
 
     @staticmethod
     def create(name: Literal["fractal", "simplex"]) -> NoiseStrategy:
-        """Return a NoiseStrategy matching the given name."""
+        """
+        Create a noise strategy by identifier.
+
+        :param name: Strategy name (``"fractal"`` or ``"simplex"``).
+        :type name: Literal["fractal", "simplex"]
+        :return: Instantiated noise strategy.
+        :rtype: NoiseStrategy
+        :raises ValueError: If the strategy name is unknown.
+        """
         key = name.lower()
         if key == "fractal":
             return FractalNoise()

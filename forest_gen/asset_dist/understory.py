@@ -12,9 +12,19 @@ from .state import SimulationState
 from ..forest import ForestBuilder, ForestConfig
 from ..terrain import Terrain
 
+"""
+Understory plant distribution utilities.
+
+Implements spatial viability maps and a distributor that places
+understory vegetation using the shared forest simulation pipeline.
+"""
 
 class PatchyUnderstoryMap:
-    """Patchiness map driven by simplex noise to avoid uniform carpets."""
+    """
+    Binary patchiness mask for understory vegetation.
+
+    Uses simplex noise to avoid uniform understory carpets.
+    """
 
     def __init__(
         self,
@@ -27,12 +37,21 @@ class PatchyUnderstoryMap:
         self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
 
     def __call__(self, x: float, y: float) -> float:
+        """
+        Evaluate patch presence at world coordinates.
+
+        :return: ``1.0`` if location is inside a patch, otherwise ``0.0``.
+        :rtype: float
+        """
         return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > self.threshold else 0.0
 
 
 class CanopyShadeMap:
-    """Favors locations close to canopy trees while avoiding trunks."""
+    """
+    Viability mask favoring locations near canopy trees.
 
+    Suppresses growth near trunks and attenuates viability with distance.
+    """
     def __init__(
         self,
         canopy_positions: Iterable[tuple[float, float]],
@@ -46,6 +65,12 @@ class CanopyShadeMap:
         self.falloff_radius = max(falloff_radius, preferred_distance)
 
     def __call__(self, x: float, y: float) -> float:
+        """
+        Evaluate canopy-shade viability at world coordinates.
+
+        :return: Viability multiplier in ``[0.0, 1.0]``.
+        :rtype: float
+        """
         if not self.canopy_positions:
             return 1.0
 
@@ -62,8 +87,9 @@ class CanopyShadeMap:
 
 
 class UnderstoryDistributor:
-    """Distribute understory plants using the Simulation placement logic."""
-
+    """
+    Distribute understory plants using the forest simulation pipeline.
+    """
     def __init__(
         self,
         terrain: Terrain,
@@ -129,6 +155,14 @@ class UnderstoryDistributor:
         )
 
     def generate(self, config: ForestConfig) -> SimulationState:
+        """
+        Generate understory vegetation for the given forest configuration.
+
+        :param config: Forest generation configuration.
+        :type config: ForestConfig
+        :return: Resulting simulation state.
+        :rtype: SimulationState
+        """
         builder = (
             ForestBuilder()
             .with_size((self.terrain.config.size, self.terrain.config.size))

@@ -3,21 +3,25 @@ import numpy as np
 
 
 class SlopeAspectCalculator:
-    """Calculates slope (in degrees) and aspect (in degrees) for each cell of a heightmap."""
+    """
+    Compute slope and aspect from a terrain heightmap.
 
+    Slope is returned in degrees. Aspect is returned in degrees
+    clockwise from north (``[0, 360)``).
+    """
     def __init__(self, resolution: float = 1.0):
         self.resolution = resolution
 
     def compute(self, heightmap: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Compute slope and aspect for each cell of the heightmap.
+        Compute slope and aspect for each cell of a heightmap.
 
-        Args:
-        - heightmap: 2D numpy array of heights
+        Central differences are used to estimate height gradients.
 
-        Returns:
-        - slope: 2D numpy array of slopes in degrees
-        - aspect: 2D numpy array of aspects in degrees (compass direction the slope faces)
+        :param heightmap: 2D terrain heightmap.
+        :type heightmap: numpy.ndarray
+        :return: Tuple ``(slope, aspect)`` in degrees.
+        :rtype: tuple[numpy.ndarray, numpy.ndarray]
         """
         rows, cols = heightmap.shape
         slope = np.zeros((rows, cols), dtype=np.float32)

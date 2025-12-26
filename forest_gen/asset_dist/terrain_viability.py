@@ -5,23 +5,29 @@ import numpy as np
 
 
 class TerrainViabilityMap:
-    """Callable wrapper returning terrain-derived values for coordinates."""
+    """
+        Callable terrain-based viability lookup.
 
+        Samples one or more raster layers at world coordinates and combines
+        the values into a single viability multiplier.
+        """
     def __init__(
         self,
         data: np.ndarray | Mapping[str, np.ndarray],
         resolution: float,
         combine: Callable[[Mapping[str, float]], float] | None = None,
     ):
-        """Create a terrain viability lookup.
+        """
+        Initialize a terrain viability map.
 
-        Args:
-            data: Either a single raster array or a mapping from layer names to
-                raster arrays. All arrays must share the same shape.
-            resolution: The spatial resolution of the raster grids.
-            combine: Optional callable receiving a mapping of sampled values
-                and returning a single viability multiplier. Defaults to
-                multiplying all layer values together.
+        :param data: Single raster array or mapping of named raster layers.
+                     All layers must share the same shape.
+        :type data: numpy.ndarray or Mapping[str, numpy.ndarray]
+        :param resolution: Spatial resolution of the raster grids.
+        :type resolution: float
+        :param combine: Optional function combining sampled layer values.
+                        Defaults to multiplicative combination.
+        :type combine: Callable[[Mapping[str, float]], float] or None
         """
 
         if isinstance(data, Mapping):
@@ -52,6 +58,16 @@ class TerrainViabilityMap:
         return 0 <= i < self._shape[0] and 0 <= j < self._shape[1]
     
     def __call__(self, x: float, y: float) -> float:
+        """
+        Sample terrain viability at world coordinates.
+
+        :param x: X coordinate in world units.
+        :type x: float
+        :param y: Y coordinate in world units.
+        :type y: float
+        :return: Combined viability value.
+        :rtype: float
+        """
         i = int(y / self.resolution)
         j = int(x / self.resolution)
         if not self._in_bounds(i, j):

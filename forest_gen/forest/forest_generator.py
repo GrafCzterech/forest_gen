@@ -10,7 +10,12 @@ from ..terrain import Terrain
 
 
 class ForestGenerator:
-    """Generate plant distributions using the Simulation logic."""
+    """
+    High-level generator for forest plant distributions.
+
+    Wraps the distribution simulation pipeline and optionally integrates
+    terrain-derived viability layers.
+    """
 
     def __init__(
         self,
@@ -20,6 +25,20 @@ class ForestGenerator:
         terrain_layers: Mapping[str, np.ndarray] | None = None,
         layer_combiner: Callable[[Mapping[str, float]], float] | None = None,
     ):
+        """
+        Initialize the forest generator.
+
+        :param size: Simulation area size ``(width, height)``.
+        :type size: tuple[float, float]
+        :param species: Species grouped by category.
+        :type species: dict[str, set[Species]]
+        :param terrain: Optional terrain providing viability layers.
+        :type terrain: Terrain or None
+        :param terrain_layers: Optional additional terrain layers.
+        :type terrain_layers: Mapping[str, numpy.ndarray] or None
+        :param layer_combiner: Optional function combining terrain layer samples.
+        :type layer_combiner: Callable[[Mapping[str, float]], float] or None
+        """
         builder = DistributionBuilder().with_size(size)
         for kind, typed_species in species.items():
             for sp in typed_species:
@@ -44,6 +63,14 @@ class ForestGenerator:
         self._generator = builder.build()
 
     def generate(self, config: ForestConfig) -> SimulationState:
+        """
+        Generate a forest distribution.
+
+        :param config: Forest generation configuration.
+        :type config: ForestConfig
+        :return: Resulting simulation state.
+        :rtype: SimulationState
+        """
         distribution_cfg = DistributionConfig(
                     scene_density=config.scene_density,
                     years=config.years,
