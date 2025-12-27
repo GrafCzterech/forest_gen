@@ -1,7 +1,7 @@
-from dataclasses import dataclass, field
-import random
-from typing import Callable, Iterable
 import math
+import random
+from dataclasses import dataclass, field
+from typing import Callable, Iterable
 
 from opensimplex import OpenSimplex
 
@@ -18,6 +18,7 @@ class ViabilityMap:
     """
     Callable spatial viability function based on procedural noise.
     """
+
     def __init__(self, eps: float = 0.1):
 
         self.noise = OpenSimplex(random.randint(0, 1000))
@@ -42,6 +43,7 @@ class Species:
     """
     Specification describing biological parameters of a plant species.
     """
+
     name: str
     max_age: int
     """Maximum lifespan."""
@@ -54,9 +56,7 @@ class Species:
     """Radius in which the seeds can be planted."""
     radius: float = 0.5
     """Radius needed for the plant to consider itself as clear of obstacles."""
-    viability_map: Callable[[float, float], float] = field(
-        default_factory=ViabilityMap
-    )
+    viability_map: Callable[[float, float], float] = field(default_factory=ViabilityMap)
     """Spatial viability function."""
     juvenile_mortality_depth: float = 0.4
     """Peak early-life viability reduction."""
@@ -88,6 +88,7 @@ class Plant:
     """
     Individual plant instance in the simulation.
     """
+
     coords: tuple[float, float]
     """World-space coordinates."""
     species: Species
@@ -111,8 +112,7 @@ class Plant:
         growth_phase = min(1.0, norm_age / max(sp.juvenile_recovery_age, 1e-6))
         juvenile_width = max(sp.juvenile_mortality_width, 1e-6)
         juvenile_penalty = sp.juvenile_mortality_depth * math.exp(
-            -((norm_age - sp.juvenile_mortality_peak) ** 2)
-            / (2 * juvenile_width**2)
+            -((norm_age - sp.juvenile_mortality_peak) ** 2) / (2 * juvenile_width**2)
         )
         juvenile_modifier = max(0.0, 1.0 - juvenile_penalty)
 

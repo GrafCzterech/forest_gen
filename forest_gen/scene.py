@@ -21,7 +21,7 @@ from forest_gen_utils.asset_dist.understory import UnderstoryDistributor
 from forest_gen_utils.forest import ForestBuilder, ForestConfig
 from forest_gen_utils.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
 from forest_gen_utils.terrain import Terrain, TerrainBuilder, TerrainConfig
-from forest_gen_utils.travelsibilitymap import (
+from forest_gen_utils.traversability import (
     TraversabilityConfig,
     TraversabilityMapBuilder,
 )

@@ -49,7 +49,7 @@ class ObstacleGenerator:
         return True
 
     def generate(self, config: ObstacleConfig) -> list[Obstacle]:
-        """ 
+        """
         Generate obstacles according to the given configuration.
 
         :param config: Obstacle generation configuration.

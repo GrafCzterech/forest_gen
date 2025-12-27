@@ -1,7 +1,7 @@
-from .microrelief_strategy import MicroreliefStrategy
-
-from scipy.ndimage import gaussian_filter
 import numpy as np
+from scipy.ndimage import gaussian_filter
+
+from .microrelief_strategy import MicroreliefStrategy
 
 
 class BasicMicrorelief(MicroreliefStrategy):
@@ -11,6 +11,7 @@ class BasicMicrorelief(MicroreliefStrategy):
     Adds subtle, high-frequency variation to a heightmap and clamps
     the result to ``[0.0, 1.0]``.
     """
+
     def __init__(self, strength: float = 0.001, sigma: float = 0.8):
         self.strength = strength
         self.sigma = sigma

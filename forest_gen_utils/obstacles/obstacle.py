@@ -6,6 +6,7 @@ class Obstacle:
     """
     Immutable representation of a navigational obstacle.
     """
+
     kind: str
     """Obstacle type identifier."""
 

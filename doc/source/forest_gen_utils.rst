@@ -18,6 +18,6 @@ forest_gen_utils Module
 
 .. automodule:: forest_gen_utils.terrain
 
-.. automodule:: forest_gen_utils.travelsibilitymap
+.. automodule:: forest_gen_utils.traversability
 
 .. automodule:: forest_gen_utils.vis

@@ -1,14 +1,14 @@
-from typing import Iterable
-from itertools import chain
 import math
 from copy import copy
+from itertools import chain
 from logging import getLogger
+from typing import Iterable
 
 import numpy as np
 
 logger = getLogger(__name__)
 
-from .definitions import Species, Plant
+from .definitions import Plant, Species
 
 # here is where the magic happens
 
@@ -34,7 +34,7 @@ class SimulationState:
         :param div: Number of grid divisions per axis for spatial indexing.
         :type div: int
         """
-       
+
         self.cell_width = size[0] / div
         self.cell_height = size[1] / div
         self.grid_width = int(size[0] / self.cell_width)
@@ -86,20 +86,14 @@ class SimulationState:
         else:
             coords = coords_or_plant
             if radius is None:
-                raise TypeError(
-                    "radius must be provided when passing coordinates"
-                )
+                raise TypeError("radius must be provided when passing coordinates")
 
         x, y = self.get_cell(coords)
         radius = math.ceil(radius / self.cell_width)
         return chain.from_iterable(
             self.map[i][j]
-            for i in range(
-                max(0, x - radius), min(self.grid_width, x + radius) + 1
-            )
-            for j in range(
-                max(0, y - radius), min(self.grid_height, y + radius) + 1
-            )
+            for i in range(max(0, x - radius), min(self.grid_width, x + radius) + 1)
+            for j in range(max(0, y - radius), min(self.grid_height, y + radius) + 1)
         )
 
     def get_nearby_plant(self, plant: Plant) -> chain[Plant]:
@@ -134,7 +128,7 @@ class SimulationState:
         self.map[x][y].append(plant)
 
     def __iter__(self) -> chain[Plant]:
- 
+
         return chain.from_iterable(chain.from_iterable(self.map))
 
     def __len__(self) -> int:
@@ -200,9 +194,7 @@ class SimulationState:
         ]
         return True, removable
 
-    def run_state(
-        self, num_years: int, max_population: int | None = None
-    ) -> None:
+    def run_state(self, num_years: int, max_population: int | None = None) -> None:
         """
         Advance the simulation by a number of years.
 
@@ -217,9 +209,7 @@ class SimulationState:
 
             plants_now = list(self)
             for plant in plants_now:
-                pop_counter[plant.species] = (
-                    pop_counter.get(plant.species, 0) + 1
-                )
+                pop_counter[plant.species] = pop_counter.get(plant.species, 0) + 1
 
             sum_a = len(plants_now)
             if max_population is not None and sum_a >= max_population:
@@ -257,10 +247,7 @@ class SimulationState:
                     self.add(new_plant)
                     sum_a += 1
 
-                    if (
-                        max_population is not None
-                        and sum_a >= max_population
-                    ):
+                    if max_population is not None and sum_a >= max_population:
                         break
 
                 if max_population is not None and sum_a >= max_population:

@@ -11,6 +11,7 @@ class ObstacleBuilder:
     """
     Fluent builder for configuring an :class:`ObstacleGenerator`.
     """
+
     def __init__(self):
         self._specs: list[ObstacleSpec] | None = None
         self._seed: int | None = None

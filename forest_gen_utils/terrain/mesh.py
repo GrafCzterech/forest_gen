@@ -77,12 +77,16 @@ def heightmap_to_mesh(
     if face_varying_uv:
         expanded_verts = vertices[faces].reshape((-1, 3))
         expanded_uvs = uv[faces].reshape((-1, 2)).astype(np.float32)
-        expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(-1, 3)
+        expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(
+            -1, 3
+        )
 
         visual = TextureVisuals(uv=expanded_uvs)
         setattr(visual, "vertex_colors", None)
 
-        mesh = Trimesh(vertices=expanded_verts, faces=expanded_faces, process=False, visual=visual)
+        mesh = Trimesh(
+            vertices=expanded_verts, faces=expanded_faces, process=False, visual=visual
+        )
         return mesh
 
     visual = TextureVisuals(uv=uv)
@@ -130,9 +134,7 @@ def heightmap_to_meshes(
 
                 faces = classes.get(class1, [])
 
-                faces.append(
-                    (i * cols + j, i * cols + (j + 1), (i + 1) * cols + j)
-                )
+                faces.append((i * cols + j, i * cols + (j + 1), (i + 1) * cols + j))
                 faces.append(
                     (
                         (i + 1) * cols + j,
@@ -157,15 +159,24 @@ def heightmap_to_meshes(
         if face_varying_uv:
             expanded_verts = vertices[faces_arr].reshape((-1, 3))
             expanded_uvs = uv[faces_arr].reshape((-1, 2)).astype(np.float32)
-            expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(-1, 3)
+            expanded_faces = np.arange(expanded_verts.shape[0], dtype=np.int64).reshape(
+                -1, 3
+            )
 
             visual = TextureVisuals(uv=expanded_uvs)
             setattr(visual, "vertex_colors", None)
-            mesh = Trimesh(vertices=expanded_verts, faces=expanded_faces, process=False, visual=visual)
+            mesh = Trimesh(
+                vertices=expanded_verts,
+                faces=expanded_faces,
+                process=False,
+                visual=visual,
+            )
         else:
             visual = TextureVisuals(uv=uv)
             setattr(visual, "vertex_colors", None)
-            mesh = Trimesh(vertices=vertices, faces=faces_arr, process=False, visual=visual)
+            mesh = Trimesh(
+                vertices=vertices, faces=faces_arr, process=False, visual=visual
+            )
 
         result.append((mesh, [("terrain_class", tag)]))
 

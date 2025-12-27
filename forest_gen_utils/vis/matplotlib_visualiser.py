@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
-from .visualiser import Visualizer
 from matplotlib.colors import ListedColormap
+
+from .visualiser import Visualizer
 
 
 class MatplotlibVisualizer(Visualizer):

@@ -3,15 +3,16 @@ from typing import Callable
 
 import numpy as np
 
-from .forest_generator import ForestGenerator
-from ..terrain import Terrain
 from ..asset_dist import Species
+from ..terrain import Terrain
+from .forest_generator import ForestGenerator
 
 
 class ForestBuilder:
     """
     Fluent builder for constructing a :class:`ForestGenerator`.
     """
+
     def __init__(self):
         self._species: dict[str, set[Species]] = {}
         self._size: tuple[float, float] = (100.0, 100.0)
@@ -75,7 +76,6 @@ class ForestBuilder:
         self._terrain_layers = layers
         self._layer_combiner = combine
         return self
-
 
     def build(self):
         """

@@ -6,11 +6,12 @@ import numpy as np
 
 class TerrainViabilityMap:
     """
-        Callable terrain-based viability lookup.
+    Callable terrain-based viability lookup.
 
-        Samples one or more raster layers at world coordinates and combines
-        the values into a single viability multiplier.
-        """
+    Samples one or more raster layers at world coordinates and combines
+    the values into a single viability multiplier.
+    """
+
     def __init__(
         self,
         data: np.ndarray | Mapping[str, np.ndarray],
@@ -56,7 +57,7 @@ class TerrainViabilityMap:
 
     def _in_bounds(self, i: int, j: int) -> bool:
         return 0 <= i < self._shape[0] and 0 <= j < self._shape[1]
-    
+
     def __call__(self, x: float, y: float) -> float:
         """
         Sample terrain viability at world coordinates.
@@ -71,7 +72,7 @@ class TerrainViabilityMap:
         i = int(y / self.resolution)
         j = int(x / self.resolution)
         if not self._in_bounds(i, j):
-             return 0.0
-        
+            return 0.0
+
         sample = {name: float(layer[i, j]) for name, layer in self.layers.items()}
         return float(self.combine(sample))

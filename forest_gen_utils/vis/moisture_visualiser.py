@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
-from matplotlib.colors import ListedColormap, BoundaryNorm
+from matplotlib.colors import BoundaryNorm, ListedColormap
 from matplotlib.patches import Patch
+
 from .visualiser import Visualizer
 
 

@@ -1,9 +1,9 @@
 from typing import Literal
 
-from .terrain_generator import TerrainGenerator
-from .microrelief import BasicMicrorelief, NoneMicrorelief, MicroreliefStrategy
+from .microrelief import BasicMicrorelief, MicroreliefStrategy, NoneMicrorelief
 from .moisture import DefaultMoistureModel, MoistureModel
 from .noise import FractalNoise, NoiseFactory, NoiseStrategy
+from .terrain_generator import TerrainGenerator
 
 
 class TerrainBuilder:
@@ -19,9 +19,7 @@ class TerrainBuilder:
         self._micro: MicroreliefStrategy | None = None
         self._moisture: MoistureModel | None = None
 
-    def with_noise(
-        self, name: Literal["fractal", "simplex"]
-    ) -> "TerrainBuilder":
+    def with_noise(self, name: Literal["fractal", "simplex"]) -> "TerrainBuilder":
         """
         Select the noise strategy.
 

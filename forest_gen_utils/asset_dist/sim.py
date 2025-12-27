@@ -1,9 +1,9 @@
-import random
 import math
+import random
 
 from scipy.stats.qmc import PoissonDisk
 
-from .definitions import Species, Plant
+from .definitions import Plant, Species
 from .state import SimulationState
 
 # this file mainly implments the initial state of the simulation
@@ -17,9 +17,7 @@ class Simulation:
     and scene density, producing a populated :class:`SimulationState`.
     """
 
-    def __init__(
-        self, size: tuple[float, float], species: dict[str, set[Species]]
-    ):
+    def __init__(self, size: tuple[float, float], species: dict[str, set[Species]]):
         """
         Initialize the simulation definition.
 
@@ -30,7 +28,6 @@ class Simulation:
         """
         self.size = size
         self.species = species
-       
 
     def new_state(
         self,
@@ -70,8 +67,6 @@ class Simulation:
         #         point = points[i]
         #         i += 1
         #         instances.append(Plant((point[0], point[1]), sp, 0))
-
-
 
         species_list = sorted(
             (sp for type_species in self.species.values() for sp in type_species),

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+
 import numpy as np
 
 
@@ -6,7 +7,6 @@ class MicroreliefStrategy(ABC):
     """
     Strategy interface for applying microrelief to terrain heightmaps.
     """
-
 
     @abstractmethod
     def apply(self, heightmap: np.ndarray) -> np.ndarray:

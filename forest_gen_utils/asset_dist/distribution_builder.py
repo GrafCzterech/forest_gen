@@ -14,6 +14,7 @@ class DistributionBuilder:
     Fluent builder for configuring a plant distribution simulation.
 
     """
+
     def __init__(self):
         self._species: dict[str, set[Species]] = {}
         self._size: tuple[float, float] = (100.0, 100.0)

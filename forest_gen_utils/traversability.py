@@ -5,7 +5,7 @@ from scipy.interpolate import RegularGridInterpolator
 from scipy.spatial import KDTree
 from trimesh import Trimesh
 
-from ..terrain import Terrain
+from .terrain import Terrain
 
 """
 Traversability map construction utilities.
@@ -13,6 +13,7 @@ Traversability map construction utilities.
 Computes slope-based traversability from terrain meshes and applies
 additional penalties from spatial obstacles.
 """
+
 
 def compute_slope_per_vertex(mesh: Trimesh) -> np.ndarray:
     """
@@ -35,6 +36,7 @@ class TraversabilityConfig:
     """
     Configuration parameters for traversability computation.
     """
+
     resolution_factor: int = 3
     """Upsampling factor relative to terrain resolution."""
     max_slope_deg: float = 30.0
@@ -49,6 +51,7 @@ class TraversabilityMapBuilder:
     """
     Build a high-resolution traversability map from terrain data.
     """
+
     def __init__(
         self,
         terrain: Terrain,
@@ -117,16 +120,12 @@ class TraversabilityMapBuilder:
         for i in range(self.high_res_size):
             for j in range(self.high_res_size):
                 px, py = self.X[i, j], self.Y[i, j]
-                indices = kdtree.query_ball_point(
-                    [px, py], r=obstacle_influence_radius
-                )
+                indices = kdtree.query_ball_point([px, py], r=obstacle_influence_radius)
                 if indices:
                     penalties = []
                     for idx in indices:
                         # Euklides
-                        d = np.hypot(
-                            px - tree_points[idx, 0], py - tree_points[idx, 1]
-                        )
+                        d = np.hypot(px - tree_points[idx, 0], py - tree_points[idx, 1])
                         # d = 0   --> penalty_value = tree_penalty (full penalty)
                         # d = tree_influence_radius --> penalty_value = tree_penalty * 0.3
                         penalty_value = obstacle_penalty * (

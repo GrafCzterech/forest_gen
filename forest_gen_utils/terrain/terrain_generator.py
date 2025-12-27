@@ -1,14 +1,13 @@
 from __future__ import annotations
-from dataclasses import dataclass
 
-from .utils import DrainageCarver, FlowAccumulator, SlopeAspectCalculator
+from dataclasses import dataclass
 
 from .microrelief import MicroreliefStrategy
 from .moisture import MoistureModel
 from .noise import NoiseStrategy
-
-from .terrain_config import TerrainConfig
 from .terrain import Terrain
+from .terrain_config import TerrainConfig
+from .utils import DrainageCarver, FlowAccumulator, SlopeAspectCalculator
 
 
 @dataclass

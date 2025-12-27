@@ -3,10 +3,14 @@ from typing import Callable
 
 import numpy as np
 
-
-from ..asset_dist import DistributionBuilder, DistributionConfig, SimulationState, Species
-from .forest_config import ForestConfig
+from ..asset_dist import (
+    DistributionBuilder,
+    DistributionConfig,
+    SimulationState,
+    Species,
+)
 from ..terrain import Terrain
+from .forest_config import ForestConfig
 
 
 class ForestGenerator:
@@ -53,11 +57,13 @@ class ForestGenerator:
                 **(terrain_layers or {}),
             }
             filtered_layers = {
-                name: layer for name, layer in available_layers.items() if layer is not None
+                name: layer
+                for name, layer in available_layers.items()
+                if layer is not None
             }
-            
+
             if filtered_layers:
-                builder.with_terrain_viability_layers(                    
+                builder.with_terrain_viability_layers(
                     filtered_layers, terrain.config.resolution, combine=layer_combiner
                 )
         self._generator = builder.build()
@@ -72,7 +78,7 @@ class ForestGenerator:
         :rtype: SimulationState
         """
         distribution_cfg = DistributionConfig(
-                    scene_density=config.scene_density,
-                    years=config.years,
-                )
+            scene_density=config.scene_density,
+            years=config.years,
+        )
         return self._generator.generate(distribution_cfg)

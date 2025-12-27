@@ -1,12 +1,12 @@
+import os
 from dataclasses import dataclass
 from typing import Callable
 
-import os
 import numpy as np
 from trimesh import Trimesh
 
-from .terrain_config import TerrainConfig
 from .mesh import heightmap_to_mesh, heightmap_to_meshes
+from .terrain_config import TerrainConfig
 
 
 @dataclass
@@ -17,6 +17,7 @@ class Terrain:
     Holds all terrain-derived fields (height, flow, slope, aspect,
     moisture) together with helper methods for sampling and mesh export.
     """
+
     config: TerrainConfig
     """Terrain generation configuration."""
     heightmap: np.ndarray
@@ -44,9 +45,7 @@ class Terrain:
         :return: Height value at the given position.
         :rtype: float
         """
-        return self.heightmap[
-            self.config.transform(y), self.config.transform(x)
-        ]
+        return self.heightmap[self.config.transform(y), self.config.transform(x)]
 
     def to_mesh(self) -> Trimesh:
         """

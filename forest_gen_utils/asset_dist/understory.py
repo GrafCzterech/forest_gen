@@ -7,10 +7,10 @@ from collections.abc import Iterable, Mapping
 import numpy as np
 from opensimplex import OpenSimplex
 
-from .definitions import Species
-from .state import SimulationState
 from ..forest import ForestBuilder, ForestConfig
 from ..terrain import Terrain
+from .definitions import Species
+from .state import SimulationState
 
 """
 Understory plant distribution utilities.
@@ -18,6 +18,7 @@ Understory plant distribution utilities.
 Implements spatial viability maps and a distributor that places
 understory vegetation using the shared forest simulation pipeline.
 """
+
 
 class PatchyUnderstoryMap:
     """
@@ -34,7 +35,9 @@ class PatchyUnderstoryMap:
     ):
         self.scale = scale
         self.threshold = threshold
-        self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
+        self.noise = OpenSimplex(
+            seed if seed is not None else random.randint(0, 10_000)
+        )
 
     def __call__(self, x: float, y: float) -> float:
         """
@@ -43,7 +46,11 @@ class PatchyUnderstoryMap:
         :return: ``1.0`` if location is inside a patch, otherwise ``0.0``.
         :rtype: float
         """
-        return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > self.threshold else 0.0
+        return (
+            1.0
+            if self.noise.noise2(x * self.scale, y * self.scale) > self.threshold
+            else 0.0
+        )
 
 
 class CanopyShadeMap:
@@ -52,6 +59,7 @@ class CanopyShadeMap:
 
     Suppresses growth near trunks and attenuates viability with distance.
     """
+
     def __init__(
         self,
         canopy_positions: Iterable[tuple[float, float]],
@@ -90,6 +98,7 @@ class UnderstoryDistributor:
     """
     Distribute understory plants using the forest simulation pipeline.
     """
+
     def __init__(
         self,
         terrain: Terrain,

@@ -1,8 +1,8 @@
+from typing import Literal
+
 from .fractal_noise import FractalNoise
 from .noise_strategy import NoiseStrategy
 from .simplex_noise import SimplexNoise
-
-from typing import Literal
 
 
 class NoiseFactory:

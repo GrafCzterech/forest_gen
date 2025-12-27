@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.ndimage import gaussian_filter
-from .noise_strategy import NoiseStrategy
+
 from ..terrain_config import TerrainConfig
+from .noise_strategy import NoiseStrategy
 
 
 class FractalNoise(NoiseStrategy):
@@ -41,7 +42,7 @@ class FractalNoise(NoiseStrategy):
         :return: 2D heightmap array with values in ``[0.0, 1.0]``.
         :rtype: numpy.ndarray
         """
-        
+
         if self.seed is not None:
             np.random.seed(self.seed)
 
@@ -51,9 +52,7 @@ class FractalNoise(NoiseStrategy):
 
         for _ in range(config.octaves):
             noise = np.random.rand(rows, cols)
-            sigma = (
-                (rows + cols) * config.resolution / (config.scale * freq * 2.0)
-            )
+            sigma = (rows + cols) * config.resolution / (config.scale * freq * 2.0)
             smooth = gaussian_filter(noise, sigma=sigma, mode="wrap")
             heightmap += smooth * amp  # type: ignore[operator]
             total_amp += amp

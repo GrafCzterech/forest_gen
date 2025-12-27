@@ -8,6 +8,7 @@ class FlowAccumulator:
     Computes flow accumulation using the D8 algorithm, where each cell
     drains to its single steepest downslope neighbor.
     """
+
     def compute(self, hm: np.ndarray) -> np.ndarray:
         """
         Compute D8 flow accumulation from a heightmap.

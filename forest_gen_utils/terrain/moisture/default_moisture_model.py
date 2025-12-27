@@ -1,6 +1,8 @@
-from .moisture_model import MoistureModel
 from typing import Dict
+
 import numpy as np
+
+from .moisture_model import MoistureModel
 
 
 class DefaultMoistureModel(MoistureModel):
@@ -48,9 +50,7 @@ class DefaultMoistureModel(MoistureModel):
         w_slope = self.weights.get("slope", 0.0)
         w_aspect = self.weights.get("aspect", 0.0)
         moisture = (
-            w_flow * flow_norm
-            + w_slope * slope_penalty
-            + w_aspect * aspect_factor
+            w_flow * flow_norm + w_slope * slope_penalty + w_aspect * aspect_factor
         )
         moisture -= moisture.min()
         moisture /= moisture.max() + 1e-8

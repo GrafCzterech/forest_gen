@@ -6,7 +6,7 @@ the part that determines the shape of the terrain, placement of the trees, etc.
 This package is encapsulated by `forest_gen`, and utilized by `stripe_kit`.
 """
 
-from . import asset_dist, export, forest, obstacles, terrain, travelsibilitymap, vis
+from . import asset_dist, export, forest, obstacles, terrain, vis
 
 __all__ = [
     "asset_dist",
@@ -14,6 +14,5 @@ __all__ = [
     "forest",
     "obstacles",
     "terrain",
-    "travelsibilitymap",
     "vis",
 ]

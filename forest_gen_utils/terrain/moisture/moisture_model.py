@@ -1,5 +1,6 @@
-import numpy as np
 from abc import ABC, abstractmethod
+
+import numpy as np
 
 
 class MoistureModel(ABC):
@@ -9,6 +10,7 @@ class MoistureModel(ABC):
     Defines a common interface for models that derive a moisture index
     from hydrological flow, slope, and aspect data.
     """
+
     @abstractmethod
     def compute(
         self, flow: np.ndarray, slope: np.ndarray, aspect: np.ndarray

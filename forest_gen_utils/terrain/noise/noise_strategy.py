@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
-from ..terrain_config import TerrainConfig
+
 import numpy as np
+
+from ..terrain_config import TerrainConfig
 
 
 class NoiseStrategy(ABC):
     """
     Abstract base class for terrain noise generation strategies.
     This class defines the **Strategy** in the *Strategy Design Pattern*.
-    
+
     This interface defines the contract for all noise generators used
     to produce terrain heightmaps. Implementations must provide a
     concrete realization of the :meth:`generate` method.

@@ -1,6 +1,6 @@
 """forest_gen – procedural forest-generation toolkit"""
 
-from forest_gen_utils.travelsibilitymap import (
+from forest_gen_utils.traversability import (
     TraversabilityConfig,
     TraversabilityMapBuilder,
 )

@@ -9,7 +9,6 @@ class ObstacleSpec:
     """
     Specification describing an obstacle type.
     """
-    
 
     name: str
     """Obstacle type identifier."""
@@ -30,7 +29,7 @@ def default_obstacle_specs() -> tuple[ObstacleSpec, ...]:
     """
     Return the default obstacle specifications.
     """
-    
+
     return _default_obstacle_specs
 
 
@@ -39,6 +38,7 @@ class ObstacleConfig:
     """
     Configuration for random obstacle generation.
     """
+
     size: tuple[float, float]
     """Generation area size ``(width, height)``."""
     density: float = 0.0025
@@ -74,4 +74,3 @@ class ObstacleConfig:
             seed=self.seed,
             specs=tuple(specs),
         )
-    

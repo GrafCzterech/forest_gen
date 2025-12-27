@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-
 import math
 import random
 from collections.abc import Iterable, Mapping
@@ -9,10 +8,10 @@ import numpy as np
 from opensimplex import OpenSimplex
 from scipy.stats.qmc import PoissonDisk
 
-from .definitions import Species
-from .state import SimulationState
 from ..forest import ForestBuilder, ForestConfig
 from ..terrain import Terrain
+from .definitions import Species
+from .state import SimulationState
 
 """
 Grass distribution utilities built on the forest simulation pipeline.
@@ -21,14 +20,17 @@ Provides spatial viability maps and a distributor that reuses the
 existing Simulation / ForestBuilder infrastructure.
 """
 
+
 class PatchyGrassMap:
     """
     Binary patchiness mask driven by simplex noise.
     """
-        
+
     def __init__(self, scale: float = 0.2, seed: int | None = None):
         self.scale = scale
-        self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
+        self.noise = OpenSimplex(
+            seed if seed is not None else random.randint(0, 10_000)
+        )
 
     def __call__(self, x: float, y: float) -> float:
         """
@@ -39,11 +41,12 @@ class PatchyGrassMap:
         """
         return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > 0 else 0.0
 
+
 class TreeProximityMap:
     """
     Viability mask attenuating grass near trees.
     """
-    
+
     def __init__(
         self,
         tree_positions: Iterable[tuple[float, float]],
@@ -72,10 +75,12 @@ class TreeProximityMap:
 
         return (closest - self.hard_radius) / (self.falloff_radius - self.hard_radius)
 
+
 class GrassDistributor:
     """
     Distribute grass using the standard forest simulation pipeline.
     """
+
     def __init__(
         self,
         terrain: Terrain,
@@ -91,14 +96,15 @@ class GrassDistributor:
         radius: float = 0.6,
     ):
         self.terrain = terrain
-        self.tree_map = TreeProximityMap(tree_positions or [], hard_radius, falloff_radius)
+        self.tree_map = TreeProximityMap(
+            tree_positions or [], hard_radius, falloff_radius
+        )
         self.patchiness = PatchyGrassMap(patch_scale)
         self.max_age = max_age
         self.species_density = species_density
         self.reproduction_rate = reproduction_rate
         self.reproduction_radius = reproduction_radius
         self.radius = radius
-
 
     def _terrain_layers(self) -> Mapping[str, np.ndarray]:
         """Build terrain viability layers emphasizing gentle slopes."""
@@ -178,7 +184,9 @@ def grass_points(width: int, height: int, r: float) -> list[tuple[float, float]]
     return [tuple(point) for point in points]
 
 
-def remove_grass_near_tree(grass: list[tuple[float, float]], trees: Iterable[tuple[float, float]]) -> list[tuple[float, float]]:
+def remove_grass_near_tree(
+    grass: list[tuple[float, float]], trees: Iterable[tuple[float, float]]
+) -> list[tuple[float, float]]:
     """
     Filter grass points near trees using proximity masking.
     """

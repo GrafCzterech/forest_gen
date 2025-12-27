@@ -2,10 +2,10 @@
 Visualization subpackage initializer inside temp.
 """
 
-from .visualiser import Visualizer
-from .heightmap_visualiser import HeightmapVisualizer
 from .flow_visualiser import FlowVisualizer
+from .heightmap_visualiser import HeightmapVisualizer
 from .moisture_visualiser import MoistureVisualizer
+from .visualiser import Visualizer
 
 __all__ = [
     "Visualizer",

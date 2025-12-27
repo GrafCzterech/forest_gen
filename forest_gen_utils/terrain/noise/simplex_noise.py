@@ -1,7 +1,8 @@
-from .noise_strategy import NoiseStrategy
-from ..terrain_config import TerrainConfig
 import numpy as np
 import opensimplex as osx
+
+from ..terrain_config import TerrainConfig
+from .noise_strategy import NoiseStrategy
 
 
 class SimplexNoise(NoiseStrategy):
@@ -37,7 +38,7 @@ class SimplexNoise(NoiseStrategy):
 
         :raises ZeroDivisionError: If ``config.scale`` is zero.
         """
-         
+
         osx.seed(self.seed or 0)
         rows, cols = config.rows, config.cols
         heightmap = np.zeros((rows, cols), dtype=np.float32)
