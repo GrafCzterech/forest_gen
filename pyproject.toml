@@ -23,7 +23,7 @@ license = "GPL-3.0-only"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["forest_gen"]
+include = ["forest_gen", "forest_gen_utils"]
 
 [project.optional-dependencies]
 dev = ["black"]
@@ -31,4 +31,4 @@ vis = ["matplotlib", "ipykernel"]
 export = ["pillow"]
 
 [project.urls]
-Repository = "https://github.com/GrafCzterech/forest-gen"
+Repository = "https://github.com/GrafCzterech/forest_gen"

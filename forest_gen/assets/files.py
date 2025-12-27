@@ -1,10 +1,11 @@
+import os
 from logging import getLogger
 
-logger = getLogger(__name__)
-
-from ..asset_dist import Plant
-import os
 from stripe_kit import AssetMesh, UniversalMesh
+
+from forest_gen_utils.asset_dist import Plant
+
+logger = getLogger(__name__)
 
 # USDMesh is weird and doesn't work in Rl env
 
@@ -22,6 +23,7 @@ Provides a stable facade for loading plant asset meshes while hiding
 asset format and caching details.
 """
 
+
 # verbose? yeah but necessary cuz CACHING
 class PlantModelFactory:
     """
@@ -30,6 +32,7 @@ class PlantModelFactory:
     Acts as a facade over asset loading to decouple simulation logic
     from concrete asset formats and caching behavior.
     """
+
     def __init__(self, scale: float = 0.1):
         """
         Initialize the model factory.
@@ -75,7 +78,9 @@ class PlantModelFactory:
             )
         return self.models[key]
 
-    def get_usdz_model_by_name(self, name: str, age: int, scale_mult: float = 1) -> AssetMesh:
+    def get_usdz_model_by_name(
+        self, name: str, age: int, scale_mult: float = 1
+    ) -> AssetMesh:
         """
         Retrieve or load a USDZ plant model by species name and age.
 
@@ -95,16 +100,20 @@ class PlantModelFactory:
             logger.debug(f"Loading model for {name} age {age}")
             self.models[key] = UniversalMesh(
                 f"{MODEL_CACHE_PATH}/{name}_{age}.usdz",
-                scale=(self.scale * scale_mult, self.scale * scale_mult, self.scale * scale_mult),
-                                            # 43 sekundy przy 200 modelach Grassbed_1.usdz
-                                            # 21 sekund przy ~300 modelach GrassBed_1.usdz
-                                            # 176 sekund przy 5100 modelach GrassBed_1.usdz
-                collision_props=None,      
-                                            # 18 sekund przy 200 modelach Grassbed_1.usdz
-                                            # 20 sekund przy ~300 modelach GrassBed_1.usdz
-                                            # 174 sekund przy 5000 modelach GrassBed_1.usdz
-                #rigid_props=None,          
-                                            # 18 sekund przy 200 modelach Grassbed_1.usdz 
-                                            # razem z collision_props (nic nie zmieniło) 
+                scale=(
+                    self.scale * scale_mult,
+                    self.scale * scale_mult,
+                    self.scale * scale_mult,
+                ),
+                # 43 sekundy przy 200 modelach Grassbed_1.usdz
+                # 21 sekund przy ~300 modelach GrassBed_1.usdz
+                # 176 sekund przy 5100 modelach GrassBed_1.usdz
+                collision_props=None,
+                # 18 sekund przy 200 modelach Grassbed_1.usdz
+                # 20 sekund przy ~300 modelach GrassBed_1.usdz
+                # 174 sekund przy 5000 modelach GrassBed_1.usdz
+                # rigid_props=None,
+                # 18 sekund przy 200 modelach Grassbed_1.usdz
+                # razem z collision_props (nic nie zmieniło)
             )
         return self.models[key]

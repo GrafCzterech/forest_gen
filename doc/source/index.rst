@@ -6,13 +6,14 @@
 forest_gen documentation
 ========================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
-
+`forest_gen` is our showcase environment generation module for use in
+`stripe_kit`. It is capable of generating general purpose forest like
+environments.
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
    forest_gen
+   forest_gen_utils
+   stripe_kit documentation <https://grafczterech.github.io/STRIPE-kit/>

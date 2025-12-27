@@ -1,38 +1,35 @@
-from logging import getLogger
 import math
-from copy import deepcopy
 import random
 from collections import Counter
+from copy import deepcopy
 from logging import getLogger
+
 from opensimplex import noise2
-from trimesh import Trimesh
-
-logger = getLogger(__name__)
-
 from stripe_kit import (
-    SceneSpec,
-    AssetSpec,
     AssetInstance,
+    AssetSpec,
+    SceneSpec,
     TerrainInstance,
 )
+from trimesh import Trimesh
 
-from .asset_dist import (
+from forest_gen_utils.asset_dist import (
     Species,
 )
-from .assets import PlantModelFactory
-from .forest import ForestBuilder, ForestConfig
+from forest_gen_utils.asset_dist.grass import GrassDistributor
+from forest_gen_utils.asset_dist.understory import UnderstoryDistributor
+from forest_gen_utils.forest import ForestBuilder, ForestConfig
+from forest_gen_utils.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
+from forest_gen_utils.terrain import Terrain, TerrainBuilder, TerrainConfig
+from forest_gen_utils.travelsibilitymap import (
+    TraversabilityConfig,
+    TraversabilityMapBuilder,
+)
 
 # this is sort of a facade file for the whole module
-
 from .assets import PlantModelFactory
-from .travelsibilitymap import TraversabilityConfig, TraversabilityMapBuilder
 
-from forest_gen.asset_dist.understory import UnderstoryDistributor
-from forest_gen.forest import ForestBuilder, ForestConfig
-from forest_gen.terrain import TerrainBuilder, TerrainConfig, Terrain
-from forest_gen.asset_dist import Species
-from forest_gen.asset_dist.grass import GrassDistributor
-from forest_gen.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
+logger = getLogger(__name__)
 
 # i have heard many a voice from vile dissidents that showcase their weakness
 # and complain about how convoluted this file is. As such overt comments
@@ -43,56 +40,53 @@ from forest_gen.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
 # used for splitting the terrain into semantic classes
 
 
-#Temp solution
+# Temp solution
 
 
 forest_params = {
-    'scene_density': 1.2,
-    'simulation_years': 70,
+    "scene_density": 1.2,
+    "simulation_years": 70,
 }
 
 
 grass_params = {
-    'scene_density': 1.35,
-    'patch_scale': 0.10,
-    'hard_radius': 0.5,
-    'falloff_radius': 2.0,
-    'species_density': 4.28,
-    'reproduction_rate': 3,
-    'reproduction_radius': 3,
-    'max_age': 16,
-    'radius': 0.3,
-    'simulation_years': 20,
+    "scene_density": 1.35,
+    "patch_scale": 0.10,
+    "hard_radius": 0.5,
+    "falloff_radius": 2.0,
+    "species_density": 4.28,
+    "reproduction_rate": 3,
+    "reproduction_radius": 3,
+    "max_age": 16,
+    "radius": 0.3,
+    "simulation_years": 20,
 }
 
 obstacle_params = {
-    'specs': [
-        ('rock', 2.0, 0.55),
-        ('stump', 1.2, 0.35),
-        ('fallen_trunk', 1.4, 0.10),
+    "specs": [
+        ("rock", 2.0, 0.55),
+        ("stump", 1.2, 0.35),
+        ("fallen_trunk", 1.4, 0.10),
     ],
-    'density': 0.005,
-    'min_distance': 1.8,
-    'seed': 21,
+    "density": 0.005,
+    "min_distance": 1.8,
+    "seed": 21,
 }
 
 understory_params = {
-    'scene_density': 0.036,
-    'preferred_distance': 5.0,
-    'avoid_radius': 2.2,
-    'falloff_radius': 11.0,
-    'patch_scale': 0.12,
-    'patch_threshold': 0.5,
-    'species_density': 0.026,
-    'reproduction_rate': 1,
-    'reproduction_radius': 6.0,
-    'radius': 2.6,
-    'max_age': 35,
-    'simulation_years': forest_params['simulation_years'],
+    "scene_density": 0.036,
+    "preferred_distance": 5.0,
+    "avoid_radius": 2.2,
+    "falloff_radius": 11.0,
+    "patch_scale": 0.12,
+    "patch_threshold": 0.5,
+    "species_density": 0.026,
+    "reproduction_rate": 1,
+    "reproduction_radius": 6.0,
+    "radius": 2.6,
+    "max_age": 35,
+    "simulation_years": forest_params["simulation_years"],
 }
-
-
-
 
 
 def classify_terrain(x: float, y: float) -> str:
@@ -184,8 +178,14 @@ class ForestGenSpec(SceneSpec):
             .with_moisture_model({})
             .build()
         )
-        terrain_cfg = TerrainConfig(size=self.side, resolution=0.25, scale=4.0, octaves=2, height_scale=2, apply_microrelief=True)
-        terrain_classic = TerrainConfig(self.side, 0.5, height_scale=20)
+        terrain_cfg = TerrainConfig(
+            size=self.side,
+            resolution=0.25,
+            scale=4.0,
+            octaves=2,
+            height_scale=2,
+            apply_microrelief=True,
+        )
         terrain = generator.generate(terrain_cfg)
 
         return HeightmapTerrain(
@@ -228,32 +228,8 @@ class PlantSpec(AssetSpec):
         """
 
         # List for all assets
-        AssetList = []
+        asset_list = []
 
-        birch = Species(
-            name='Birch',
-            max_age=120,
-            species_density=0.012,
-            reproduction_rate=2,
-            reproduction_radius=10.0,
-            radius=1.9,
-            juvenile_mortality_depth=0.45,
-            juvenile_mortality_peak=0.07,
-            juvenile_mortality_width=0.05,
-            juvenile_recovery_age=0.18,
-        )
-        pine = Species(
-            name='Pine',
-            max_age=110,
-            species_density=0.018,
-            reproduction_rate=6,
-            reproduction_radius=22.0,
-            radius=1.3,
-            juvenile_mortality_depth=0.3,
-            juvenile_mortality_peak=0.05,
-            juvenile_mortality_width=0.035,
-            juvenile_recovery_age=0.15,
-        )
         # create factory for assets
         model_factory = PlantModelFactory()
 
@@ -281,10 +257,12 @@ class PlantSpec(AssetSpec):
 
                 obstacles.append(plant.coords)
 
-                AssetList.append(
+                asset_list.append(
                     self.create_instance(
                         f"{plant.species.name}_{i}",
-                        model_factory.get_usdz_model_by_name(plant.species.name, random.randint(1,3)),
+                        model_factory.get_usdz_model_by_name(
+                            plant.species.name, random.randint(1, 3)
+                        ),
                         (
                             plant.coords[0],
                             plant.coords[1],
@@ -317,24 +295,24 @@ class PlantSpec(AssetSpec):
         grass_generator = GrassDistributor(
             terrain.raw,
             tree_positions,
-            patch_scale=grass_params['patch_scale'],
-            hard_radius=grass_params['hard_radius'],
-            falloff_radius=grass_params['falloff_radius'],
-            max_age=grass_params['max_age'],
-            species_density=grass_params['species_density'],
-            reproduction_rate=grass_params['reproduction_rate'],
-            reproduction_radius=grass_params['reproduction_radius'],
-            radius=grass_params['radius'],
+            patch_scale=grass_params["patch_scale"],
+            hard_radius=grass_params["hard_radius"],
+            falloff_radius=grass_params["falloff_radius"],
+            max_age=grass_params["max_age"],
+            species_density=grass_params["species_density"],
+            reproduction_rate=grass_params["reproduction_rate"],
+            reproduction_radius=grass_params["reproduction_radius"],
+            radius=grass_params["radius"],
         )
         grass_state = grass_generator.generate(
-            ForestConfig(scene_density=grass_params['scene_density'], years=0)
+            ForestConfig(scene_density=grass_params["scene_density"], years=0)
         )
         grass_states = []
-        for _ in range(grass_params['simulation_years']):
+        for _ in range(grass_params["simulation_years"]):
             grass_state.run_state(1)
             grass_states.append(deepcopy(grass_state))
 
-        final_grass_state = grass_states[-1] if grass_states else grass_state    
+        final_grass_state = grass_states[-1] if grass_states else grass_state
         logger.debug("Grass generation finished")
 
         for i, plant in enumerate(final_grass_state):
@@ -342,14 +320,16 @@ class PlantSpec(AssetSpec):
             # if math.dist(plant.coords, origin_2d) <= self.origin_margin:
             #     continue
 
-            AssetList.append(
+            asset_list.append(
                 self.create_instance(
                     f"Grass_{i}",
-                    model_factory.get_usdz_model_by_name(
-                        "Grass", 1
+                    model_factory.get_usdz_model_by_name("Grass", 1),
+                    (
+                        plant.coords[0],
+                        plant.coords[1],
+                        terrain.raw(*plant.coords) - 0.1,
                     ),
-                    (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)-0.1),
-                    (0.0, 0.0, 0.0, 0.0),           # for glb (0.70711, 0.70711, 0.0, 0.0),
+                    (0.0, 0.0, 0.0, 0.0),  # for glb (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "blue", "species": "Grass"},
                 )
             )
@@ -357,39 +337,38 @@ class PlantSpec(AssetSpec):
         # Do the understory simulation
         logger.debug("Generating understory")
 
-
         understory_generator = UnderstoryDistributor(
             terrain.raw,
             tree_positions,
-            preferred_distance=understory_params['preferred_distance'],
-            avoid_radius=understory_params['avoid_radius'],
-            falloff_radius=understory_params['falloff_radius'],
-            patch_scale=understory_params['patch_scale'],
-            patch_threshold=understory_params['patch_threshold'],
-            species_density=understory_params['species_density'],
-            reproduction_rate=understory_params['reproduction_rate'],
-            reproduction_radius=understory_params['reproduction_radius'],
-            radius=understory_params['radius'],
-            max_age=understory_params['max_age'],
+            preferred_distance=understory_params["preferred_distance"],
+            avoid_radius=understory_params["avoid_radius"],
+            falloff_radius=understory_params["falloff_radius"],
+            patch_scale=understory_params["patch_scale"],
+            patch_threshold=understory_params["patch_threshold"],
+            species_density=understory_params["species_density"],
+            reproduction_rate=understory_params["reproduction_rate"],
+            reproduction_radius=understory_params["reproduction_radius"],
+            radius=understory_params["radius"],
+            max_age=understory_params["max_age"],
         )
 
         understory_state = understory_generator.generate(
-            ForestConfig(scene_density=understory_params['scene_density'], years=0)
+            ForestConfig(scene_density=understory_params["scene_density"], years=0)
         )
 
         understory_states = []
-        for _ in range(understory_params['simulation_years']):
+        for _ in range(understory_params["simulation_years"]):
             understory_state.run_state(1)
             understory_states.append(deepcopy(understory_state))
 
-        final_understory_state = understory_states[-1] if understory_states else understory_state
+        final_understory_state = (
+            understory_states[-1] if understory_states else understory_state
+        )
 
         logger.debug("Finished generating understory")
 
-
         for i, plant in enumerate(final_understory_state):
-            cls = classify_terrain(*plant.coords)
-            AssetList.append(
+            asset_list.append(
                 self.create_instance(
                     f"Bush_{i}",
                     model_factory.get_usdz_model_by_name("Bush", 1),
@@ -399,38 +378,42 @@ class PlantSpec(AssetSpec):
                 )
             )
 
-
-
         # Do the obstacle simulation
         logger.debug("Generating obstacles")
 
         obstacle_builder = (
             ObstacleBuilder()
-            .with_specs(tuple(ObstacleSpec(name, radius=radius, weight=weight) for name, radius, weight in obstacle_params['specs']))
-            .with_seed(obstacle_params['seed'])
+            .with_specs(
+                tuple(
+                    ObstacleSpec(name, radius=radius, weight=weight)
+                    for name, radius, weight in obstacle_params["specs"]
+                )
+            )
+            .with_seed(obstacle_params["seed"])
         )
         obstacle_generator = obstacle_builder.build()
-        obstacle_config = ObstacleConfig(size=terrain.size, density=obstacle_params['density'], min_distance=obstacle_params['min_distance'])
-        obstacles = obstacle_generator.generate(obstacle_config)
-
-
-
+        obstacle_config = ObstacleConfig(
+            size=terrain.size,
+            density=obstacle_params["density"],
+            min_distance=obstacle_params["min_distance"],
+        )
 
         logger.debug("Finished generating obstacles")
 
-
-        for i, obs in enumerate(obstacles):
-                cls = classify_terrain(*obs.coords)
-                AssetList.append(
-                    self.create_instance(
-                        f"Rock_{i}",
-                        model_factory.get_usdz_model_by_name("Rock", random.randint(1,7), 1.5),
-                        (obs.coords[0], obs.coords[1], terrain.raw(*obs.coords)),
-                        (0.0, 0.0, 0.0, 0.0),
-                        {"color": "red", "species": "obstacle"},
-                    )
+        for i, obs in enumerate(obstacle_generator.generate(obstacle_config)):
+            asset_list.append(
+                self.create_instance(
+                    f"Rock_{i}",
+                    model_factory.get_usdz_model_by_name(
+                        "Rock", random.randint(1, 7), 1.5
+                    ),
+                    (obs.coords[0], obs.coords[1], terrain.raw(*obs.coords)),
+                    (0.0, 0.0, 0.0, 0.0),
+                    {"color": "red", "species": "obstacle"},
                 )
+            )
 
-
-        logger.debug(f"{dict(Counter(ass.name.split('_', 1)[0] for ass in AssetList))}")
-        return AssetList
+        logger.debug(
+            f"{dict(Counter(ass.name.split('_', 1)[0] for ass in asset_list))}"
+        )
+        return asset_list

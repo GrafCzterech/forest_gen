@@ -18,13 +18,19 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
+    "sphinx.ext.autosummary",
 ]
 
-
+autosummary_generate = True
 templates_path = ["_templates"]
 exclude_patterns = []
 
 autodoc_mock_imports = ["isaaclab", "isaacsim", "pxr", "trimesh", "gymnasium"]
+autodoc_default_options = {
+    "members": True,
+    "undoc-members": True,
+    "show-inheritance": True,
+}
 
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
