@@ -1,5 +1,8 @@
 # forest_gen
 
+[![Documentation](https://img.shields.io/badge/github-Documentation-magenta?logo=github)](https://grafczterech.github.io/forest_gen/)
+[![PyPi](https://img.shields.io/badge/PyPI-forest_gen-blue?logo=python)](https://pypi.org/project/forest_gen/)
+
 Showcase forest scene generation module utilizing
 [stripe_kit](https://github.com/GrafCzterech/STRIPE-kit). It's rather generic,
 should allow you to generate all kinds of forests, but it is entirely focused

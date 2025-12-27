@@ -9,7 +9,7 @@
 project = "forest_gen"
 copyright = "2025, Tomasz Chady, Jakub Markil, Patryk Olszewski, Oskar Winiarski"
 author = "Tomasz Chady, Jakub Markil, Patryk Olszewski, Oskar Winiarski"
-release = "0.1.0"
+release = "0.3.4"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
