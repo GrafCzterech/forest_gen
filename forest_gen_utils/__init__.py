@@ -7,6 +7,7 @@ This package is encapsulated by `forest_gen`, and utilized by `stripe_kit`.
 """
 
 from . import asset_dist, export, forest, obstacles, terrain, vis
+from .traversability import TraversabilityMapBuilder
 
 __all__ = [
     "asset_dist",
@@ -15,4 +16,5 @@ __all__ = [
     "obstacles",
     "terrain",
     "vis",
+    "TraversabilityMapBuilder",
 ]
