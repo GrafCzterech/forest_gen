@@ -23,7 +23,8 @@ license = "GPL-3.0-only"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["forest_gen", "forest_gen_utils"]
+include = ["forest_gen*", "forest_gen_utils*"]
+exclude = ["build*", "dist*", "doc*", "tests*"]
 
 [project.optional-dependencies]
 dev = ["black"]
