@@ -23,7 +23,18 @@ extensions = [
 templates_path = ["_templates"]
 exclude_patterns = []
 
-autodoc_mock_imports = ["isaaclab", "isaacsim", "pxr", "trimesh", "gymnasium", "matplotlib", "matplotlib.pyplot",]
+autodoc_mock_imports = [
+    "isaaclab",
+    "isaacsim",
+    "pxr",
+    "trimesh",
+    "gymnasium",
+    "matplotlib",
+    "matplotlib.pyplot",
+    "opensimplex",
+    "stripe_kit",
+]
+
 autodoc_default_options = {
     "members": True,
     "undoc-members": True,
