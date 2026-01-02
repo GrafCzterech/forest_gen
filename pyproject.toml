@@ -4,7 +4,7 @@ include = '\.pyi?$'
 
 [project]
 name = "forest_gen"
-version = "0.3.5"
+version = "0.3.6"
 description = ""
 readme = "README.md"
 requires-python = ">=3.10"
@@ -25,6 +25,9 @@ license = "GPL-3.0-only"
 where = ["."]
 include = ["forest_gen*", "forest_gen_utils*"]
 exclude = ["build*", "dist*", "doc*", "tests*"]
+
+[tool.setuptools.package-data]
+"forest_gen.models" = ["*.usdz"]
 
 [project.optional-dependencies]
 dev = ["black"]

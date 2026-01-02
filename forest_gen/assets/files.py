@@ -12,7 +12,7 @@ logger = getLogger(__name__)
 # this file handles how models are generated. The idea is to create an abstract
 # fasade that won't change if we choose to load or generate assets
 
-MODEL_CACHE_PATH = os.path.abspath("../forest-gen/models")
+# MODEL_CACHE_PATH = os.path.abspath("../forest-gen/models")
 EXTENSION = "glb"
 
 
@@ -33,15 +33,18 @@ class PlantModelFactory:
     from concrete asset formats and caching behavior.
     """
 
-    def __init__(self, scale: float = 0.1):
+    def __init__(self, scale: float = 0.1, path: str = "../forest-gen/forest_gen/models"):
         """
         Initialize the model factory.
 
         :param scale: Base scale applied to loaded models.
         :type scale: float
+        :param path: Path to the directory containing plant models.
+        :type path: str
         """
         self.models: dict[tuple[str, int], AssetMesh] = {}
         self.scale = scale
+        self.path = path
 
     def get_model(self, plant: Plant) -> AssetMesh:
         """
@@ -73,7 +76,7 @@ class PlantModelFactory:
             # MAYBE remove this debug statement, its a pain in the ass
             logger.debug(f"Loading model for {name} age {age}")
             self.models[key] = UniversalMesh(
-                f"{MODEL_CACHE_PATH}/{name}_{age}.{EXTENSION}",
+                f"{self.path}/{name}_{age}.{EXTENSION}",
                 scale=(self.scale, self.scale, self.scale),
             )
         return self.models[key]
@@ -99,7 +102,7 @@ class PlantModelFactory:
             # MAYBE remove this debug statement, its a pain in the ass
             logger.debug(f"Loading model for {name} age {age}")
             self.models[key] = UniversalMesh(
-                f"{MODEL_CACHE_PATH}/{name}_{age}.usdz",
+                f"{self.path}/{name}_{age}.usdz",
                 scale=(
                     self.scale * scale_mult,
                     self.scale * scale_mult,
