@@ -137,6 +137,7 @@ class HeightmapTerrain(TerrainInstance):
             resolution_factor=self.traversability_cfg.resolution_factor,
             max_slope_deg=self.traversability_cfg.max_slope_deg,
         )
+        self.traversability_score = self.traversability_map.get_score()
 
 
 class ForestGenSpec(SceneSpec):
@@ -147,7 +148,7 @@ class ForestGenSpec(SceneSpec):
         size: int = 256,
         margin: int = 10,
         traversability_cfg: TraversabilityConfig | None = None,
-        asset_path: str = "../forest-gen/forest_gen/models",
+        asset_path: str = "../forest-gen/models",
     ):
         """Initialize the forest generation specification.
 
@@ -218,6 +219,7 @@ class PlantSpec(AssetSpec):
         super().__init__("all")
         self.forest_cfg = ForestConfig(scene_density, sim_duration)
         self.origin_margin = origin_margin
+        self.path = path
 
     def generate(self, terrain: HeightmapTerrain) -> list[AssetInstance]:
         """Generate a list of instances based on the given terrain.
