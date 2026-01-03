@@ -4,7 +4,7 @@ include = '\.pyi?$'
 
 [project]
 name = "forest_gen"
-version = "0.3.6"
+version = "0.3.7"
 description = ""
 readme = "README.md"
 requires-python = ">=3.10"
