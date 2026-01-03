@@ -147,6 +147,7 @@ class ForestGenSpec(SceneSpec):
         size: int = 256,
         margin: int = 10,
         traversability_cfg: TraversabilityConfig | None = None,
+        asset_path: str = "../forest-gen/forest_gen/models",
     ):
         """Initialize the forest generation specification.
 
@@ -158,7 +159,7 @@ class ForestGenSpec(SceneSpec):
         # here the assets are hooked up to the scene
         super().__init__(
             size=(size, size),
-            palette=[PlantSpec(origin_margin=margin)],
+            palette=[PlantSpec(origin_margin=margin, path=asset_path)],
         )
         self.side = size
         self.origin = (
@@ -205,6 +206,7 @@ class PlantSpec(AssetSpec):
         sim_duration: int = 10,
         scene_density: float = 1.0,
         origin_margin: float = 10.0,
+        path: str = "../forest-gen/forest_gen/models",
     ):
         """Construct a PlantSpec.
 
@@ -231,7 +233,7 @@ class PlantSpec(AssetSpec):
         asset_list = []
 
         # create factory for assets
-        model_factory = PlantModelFactory()
+        model_factory = PlantModelFactory(path=self.path)
 
         forest = (
             ForestBuilder()

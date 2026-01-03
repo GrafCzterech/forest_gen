@@ -26,9 +26,6 @@ where = ["."]
 include = ["forest_gen*", "forest_gen_utils*"]
 exclude = ["build*", "dist*", "doc*", "tests*"]
 
-[tool.setuptools.package-data]
-"forest_gen.models" = ["*.usdz"]
-
 [project.optional-dependencies]
 dev = ["black"]
 vis = ["matplotlib", "ipykernel"]
