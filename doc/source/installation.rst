@@ -38,6 +38,7 @@ So we have this here bash script that will download the models without
 cloning the repository:
 
 .. code-block:: bash
+
     mkdir -p models
     cd models
 
