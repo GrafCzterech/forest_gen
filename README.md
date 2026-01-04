@@ -16,3 +16,11 @@ in an error. The auxiliary logic for forest generation is isolated as
 Be sure to check out the
 [documentation](https://grafczterech.github.io/forest_gen/) for more
 information, specifically notes on the installation and usage.
+
+If you want to quickly preview how the generated scene looks like, we have
+a simple script `sim.py` at repo root that simply generates the scene and 
+simulates it in IsaacLab. Running it is as simple as:
+
+```
+python sim.py
+```
