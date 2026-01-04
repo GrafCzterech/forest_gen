@@ -14,6 +14,7 @@ environments.
    :maxdepth: 2
    :caption: Contents:
 
+   installation
    forest_gen
    forest_gen_utils
    stripe_kit documentation <https://grafczterech.github.io/STRIPE-kit/>

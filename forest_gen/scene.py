@@ -149,16 +149,18 @@ class ForestGenSpec(SceneSpec):
 
     def __init__(
         self,
+        asset_path: str,
         size: int = 256,
         margin: int = 10,
         traversability_cfg: TraversabilityConfig | None = None,
-        asset_path: str = "../forest-gen/models",
     ):
         """Initialize the forest generation specification.
 
         Args:
+            asset_path (str): The path to the assets.
             size (int): The size of the terrain.
             robot (AssetBaseCfg | None): The robot configuration.
+            traversability_cfg (TraversabilityConfig | None): The traversability configuration.
         """
 
         # here the assets are hooked up to the scene
