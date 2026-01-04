@@ -52,5 +52,8 @@ class SimplexNoise(NoiseStrategy):
                 )
 
         min_h, max_h = heightmap.min(), heightmap.max()
-        heightmap = (heightmap - min_h) / (max_h - min_h)
+        denom = float(max_h - min_h)
+        if denom <= 1e-12:
+            return np.zeros_like(heightmap, dtype=np.float32)
+        heightmap = (heightmap - min_h) / denom
         return heightmap

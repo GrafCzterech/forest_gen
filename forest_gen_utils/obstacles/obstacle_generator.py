@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 import random
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Iterable
 
 from .obstacle import Obstacle
@@ -20,7 +20,7 @@ class ObstacleGenerator:
 
     specs: tuple[ObstacleSpec, ...] | None = None
     """Optional obstacle specifications overriding defaults."""
-    rng: random.Random = random.Random()
+    rng: random.Random = field(default_factory=random.Random)
     """Base random number generator."""
 
     def _resolve_specs(self, config: ObstacleConfig) -> tuple[ObstacleSpec, ...]:

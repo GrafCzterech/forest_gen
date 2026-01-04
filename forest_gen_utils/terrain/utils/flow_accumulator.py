@@ -1,5 +1,5 @@
 import numpy as np
-
+from collections import deque
 
 class FlowAccumulator:
     """
@@ -21,50 +21,67 @@ class FlowAccumulator:
         :return: Flow accumulation array.
         :rtype: numpy.ndarray
         """
+        hm = np.asarray(hm)
         rows, cols = hm.shape
-        dirs = [
-            (-1, -1),
-            (-1, 0),
-            (-1, 1),
-            (0, -1),
-            (0, 1),
-            (1, -1),
-            (1, 0),
-            (1, 1),
+        n = rows * cols
+
+        rt2 = float(np.sqrt(2.0))
+        nbrs = [
+            (-1, -1, rt2),
+            (-1,  0, 1.0),
+            (-1,  1, rt2),
+            ( 0, -1, 1.0),
+            ( 0,  1, 1.0),
+            ( 1, -1, rt2),
+            ( 1,  0, 1.0),
+            ( 1,  1, rt2),
         ]
-        flow_to = np.zeros((rows, cols, 2), dtype=int)
-        sink = np.zeros((rows, cols), dtype=bool)
+
+        def lin(i: int, j: int) -> int:
+            return i * cols + j
+
+        receiver = np.empty(n, dtype=np.int64)
 
         for i in range(rows):
             for j in range(cols):
-                mh = hm[i, j]
-                best = (0, 0)
-                for di, dj in dirs:
+                h0 = float(hm[i, j])
+                best_i, best_j = i, j
+                best_slope = 0.0 
+                for di, dj, dist in nbrs:
                     ni, nj = i + di, j + dj
-                    if 0 <= ni < rows and 0 <= nj < cols and hm[ni, nj] < mh:
-                        mh, best = hm[ni, nj], (di, dj)
-                flow_to[i, j] = best
-                sink[i, j] = best == (0, 0)
+                    if 0 <= ni < rows and 0 <= nj < cols:
+                        drop = h0 - float(hm[ni, nj])
+                        if drop > 0.0:
+                            s = drop / dist
+                            if s > best_slope:
+                                best_slope = s
+                                best_i, best_j = ni, nj
 
-        acc = np.ones((rows, cols), dtype=float)
-        visited = {}
+                receiver[lin(i, j)] = lin(best_i, best_j)
 
-        def dfs(i, j):
-            if (i, j) in visited:
-                return visited[(i, j)]
-            if sink[i, j]:
-                val = acc[i, j]
-            else:
-                di, dj = flow_to[i, j]
-                val = acc[i, j] + dfs(i + di, j + dj)
-            visited[(i, j)] = val
-            return val
+        indeg = np.zeros(n, dtype=np.int32)
+        for k in range(n):
+            r = receiver[k]
+            if r != k:
+                indeg[r] += 1
 
-        for i in range(rows):
-            for j in range(cols):
-                dfs(i, j)
+        acc = np.ones(n, dtype=np.float64)
+        q = deque(int(k) for k in range(n) if indeg[k] == 0)
 
-        for (i, j), v in visited.items():
-            acc[i, j] = v
+        processed = 0
+        while q:
+            k = q.popleft()
+            processed += 1
+            r = receiver[k]
+            if r != k:
+                acc[r] += acc[k]
+                indeg[r] -= 1
+                if indeg[r] == 0:
+                    q.append(r)
 
-        return acc
+        if processed != n:
+            raise RuntimeError(
+                "Flow accumulation encountered a cycle"
+            )
+
+        return acc.reshape((rows, cols))

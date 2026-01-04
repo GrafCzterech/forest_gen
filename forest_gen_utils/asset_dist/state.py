@@ -3,6 +3,7 @@ from copy import copy
 from itertools import chain
 from logging import getLogger
 from typing import Iterable
+import random
 
 import numpy as np
 
@@ -203,6 +204,14 @@ class SimulationState:
         :param max_population: Optional population cap.
         :type max_population: int or None
         """
+
+        def _clamp01(v: float) -> float:
+            if v < 0.0:
+                return 0.0
+            if v > 1.0:
+                return 1.0
+            return v
+    
         for year in range(num_years):
             logger.debug(f"Year {year + 1}/{num_years}")
             pop_counter: dict[Species, int] = {}
@@ -234,10 +243,12 @@ class SimulationState:
                         or new_plant.coords[1] > self.size[1]
                     ):
                         continue
-                    viable, removable = self._evaluate_seed(
-                        new_plant, pop_counter, sum_a
-                    )
 
+                    v = _clamp01(float(new_plant.species.viability_map(*new_plant.coords)))
+                    if random.random() > v:
+                        continue
+
+                    viable, removable = self._evaluate_seed(new_plant, pop_counter, sum_a)
                     if not viable:
                         continue
 

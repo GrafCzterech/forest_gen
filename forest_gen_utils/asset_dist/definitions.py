@@ -172,6 +172,8 @@ class Plant:
             distance = random.uniform(
                 self.species.species_density, self.species.reproduction_radius
             )
+            R = max(0.0, float(self.species.reproduction_radius))
+            distance = random.uniform(0.0, R)
             new_x = self.coords[0] + distance * math.cos(angle)
             new_y = self.coords[1] + distance * math.sin(angle)
             res.append(Plant((new_x, new_y), self.species, 0))

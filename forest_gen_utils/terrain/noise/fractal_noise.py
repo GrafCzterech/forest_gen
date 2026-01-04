@@ -43,15 +43,17 @@ class FractalNoise(NoiseStrategy):
         :rtype: numpy.ndarray
         """
 
-        if self.seed is not None:
-            np.random.seed(self.seed)
+        rng = np.random.RandomState(self.seed) if self.seed is not None else np.random.RandomState()
 
         rows, cols = config.rows, config.cols
         heightmap = np.zeros((rows, cols), dtype=np.float32)
         freq, amp, total_amp = 1.0, 1.0, 0.0
 
+        if getattr(config, "octaves", 0) <= 0:
+                    return heightmap
+
         for _ in range(config.octaves):
-            noise = np.random.rand(rows, cols)
+            noise = rng.rand(rows, cols)
             sigma = (rows + cols) * config.resolution / (config.scale * freq * 2.0)
             smooth = gaussian_filter(noise, sigma=sigma, mode="wrap")
             heightmap += smooth * amp  # type: ignore[operator]
@@ -60,6 +62,9 @@ class FractalNoise(NoiseStrategy):
             freq *= self.lacunarity
 
         # Normalize to [0,1]
+        if total_amp <= 1e-12:
+            return np.zeros_like(heightmap, dtype=np.float32)
+
         heightmap /= total_amp
         heightmap -= heightmap.min()
         heightmap /= heightmap.max() + 1e-8
