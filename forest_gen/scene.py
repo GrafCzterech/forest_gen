@@ -19,7 +19,11 @@ from forest_gen_utils.asset_dist import (
 from forest_gen_utils.asset_dist.grass import GrassDistributor
 from forest_gen_utils.asset_dist.understory import UnderstoryDistributor
 from forest_gen_utils.forest import ForestBuilder, ForestConfig
-from forest_gen_utils.obstacles import ObstacleBuilder, ObstacleConfig, ObstacleSpec
+from forest_gen_utils.obstacles import (
+    ObstacleBuilder,
+    ObstacleConfig,
+    ObstacleSpec,
+)
 from forest_gen_utils.terrain import Terrain, TerrainBuilder, TerrainConfig
 from forest_gen_utils.traversability import (
     TraversabilityConfig,
@@ -204,14 +208,15 @@ class PlantSpec(AssetSpec):
 
     def __init__(
         self,
+        path: str,
         sim_duration: int = 10,
         scene_density: float = 1.0,
         origin_margin: float = 10.0,
-        path: str = "../forest-gen/forest_gen/models",
     ):
         """Construct a PlantSpec.
 
         Args:
+            path (str): The path to the directory containing the plant models.
             sim_duration (int, optional): The duration in years of the simulation used for tree position generation. Defaults to 10.
             scene_density (float, optional): Global density multiplier applied to the generated scene. Defaults to 1.0.
             origin_margin (float, optional): The margin around the origin for generating assets. Defaults to 10.0.
@@ -277,13 +282,6 @@ class PlantSpec(AssetSpec):
                     )
                 )
 
-        if obstacles:
-            terrain.traversability_map.add_obstacle_score(
-                obstacles,
-                obstacle_influence_radius=terrain.traversability_cfg.obstacle_influence_radius,
-                obstacle_penalty=terrain.traversability_cfg.obstacle_penalty,
-            )
-
         # do the grass simulation
         logger.debug("Generating grass")
 
@@ -333,7 +331,12 @@ class PlantSpec(AssetSpec):
                         plant.coords[1],
                         terrain.raw(*plant.coords) - 0.1,
                     ),
-                    (0.0, 0.0, 0.0, 0.0),  # for glb (0.70711, 0.70711, 0.0, 0.0),
+                    (
+                        0.0,
+                        0.0,
+                        0.0,
+                        0.0,
+                    ),  # for glb (0.70711, 0.70711, 0.0, 0.0),
                     {"color": "blue", "species": "Grass"},
                 )
             )
@@ -357,7 +360,9 @@ class PlantSpec(AssetSpec):
         )
 
         understory_state = understory_generator.generate(
-            ForestConfig(scene_density=understory_params["scene_density"], years=0)
+            ForestConfig(
+                scene_density=understory_params["scene_density"], years=0
+            )
         )
 
         understory_states = []
@@ -372,11 +377,18 @@ class PlantSpec(AssetSpec):
         logger.debug("Finished generating understory")
 
         for i, plant in enumerate(final_understory_state):
+
+            obstacles.append(plant.coords)
+
             asset_list.append(
                 self.create_instance(
                     f"Bush_{i}",
                     model_factory.get_usdz_model_by_name("Bush", 1),
-                    (plant.coords[0], plant.coords[1], terrain.raw(*plant.coords)),
+                    (
+                        plant.coords[0],
+                        plant.coords[1],
+                        terrain.raw(*plant.coords),
+                    ),
                     (0.0, 0.0, 0.0, 0.0),
                     {"color": "purple", "species": "Bush"},
                 )
@@ -405,6 +417,9 @@ class PlantSpec(AssetSpec):
         logger.debug("Finished generating obstacles")
 
         for i, obs in enumerate(obstacle_generator.generate(obstacle_config)):
+
+            obstacles.append(obs.coords)
+
             asset_list.append(
                 self.create_instance(
                     f"Rock_{i}",
@@ -415,6 +430,13 @@ class PlantSpec(AssetSpec):
                     (0.0, 0.0, 0.0, 0.0),
                     {"color": "red", "species": "obstacle"},
                 )
+            )
+
+        if obstacles:
+            terrain.traversability_map.add_obstacle_score(
+                obstacles,
+                obstacle_influence_radius=terrain.traversability_cfg.obstacle_influence_radius,
+                obstacle_penalty=terrain.traversability_cfg.obstacle_penalty,
             )
 
         logger.debug(
