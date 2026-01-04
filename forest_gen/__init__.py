@@ -7,15 +7,19 @@ from importlib import import_module
 
 __all__ = [
     "ForestGenSpec",
+    "HeightmapTerrain",
+    "PlantSpec",
     "TraversabilityMapBuilder",
     "TraversabilityConfig",
+    "assets",
 ]
 
+
 def __getattr__(name: str):
-    if name == "ForestGenSpec":
+    if name in {"ForestGenSpec", "HeightmapTerrain", "PlantSpec", "assets"}:
         # scene depends on stripe_kit / isaaclab -> import lazily
         mod = import_module(".scene", __name__)
-        obj = mod.ForestGenSpec
+        obj = getattr(mod, name)
         globals()[name] = obj
         return obj
 

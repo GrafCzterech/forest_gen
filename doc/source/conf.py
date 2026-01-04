@@ -20,7 +20,16 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx_rtd_theme",
+    "sphinx.ext.intersphinx",
 ]
+
+intersphinx_mapping = {
+    "stripe_kit": ("https://grafczterech.github.io/STRIPE-kit/", None),
+    "isaaclab": ("https://isaac-sim.github.io/IsaacLab/main/", None),
+    "trimesh": ("https://trimesh.org/", None),
+    "gymnasium": ("https://gymnasium.farama.org/", None),
+    "numpy": ("https://numpy.org/doc/stable/", None),
+}
 
 templates_path = ["_templates"]
 exclude_patterns = []

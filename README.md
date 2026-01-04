@@ -12,3 +12,7 @@ The core functionality, to be used with `stripe_kit` is isolated as
 `forest_gen`. Trying to import that module without running IsaacLab will result
 in an error. The auxiliary logic for forest generation is isolated as
 `forest_gen_utils`, and feel free to import it in non-IsaacLab environments.
+
+Be sure to check out the
+[documentation](https://grafczterech.github.io/forest_gen/) for more
+information, specifically notes on the installation and usage.
