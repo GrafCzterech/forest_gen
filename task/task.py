@@ -29,7 +29,7 @@ class TerminationsCfg:
 
 
 task_spec = TrainingSpec(
-    scene=ForestGenSpec(asset_path="../models", size=50),
+    scene=ForestGenSpec(asset_path="./models", size=50),
     robot=SPOT_CFG,
     actions=SpotActionsCfg(),
     observations=SpotObservationsCfg(),
