@@ -26,7 +26,9 @@ python sim.py
 ```
 
 We also have included an example of a task definition utilizing `stripe_kit`
-and `forest_gen` in `task.py`. You can technically use it verbatim, should
-you add a wrapper over it that would register the exported `task_spec`,
-however that file is meant to be more of a reference for how to use the
-modules.
+and `forest_gen` in `task/task.py`. You should be able to launch it as is
+using `train.py` in a command like this:
+
+```bash
+python3 train.py --task=task --video --headless --num_envs=500
+```
