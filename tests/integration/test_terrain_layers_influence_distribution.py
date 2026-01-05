@@ -132,7 +132,8 @@ def test_viability_layers_bias_distribution_over_time(sym):
     )
 
     state = gen.generate(ForestConfig(scene_density=1.0, years=3))
-
+    xs = [p.coords[0] for p in state]
+    assert max(xs) > mid_x, f"max x is {max(xs):.3f} (looks like unit-cube sampling)"
     left = sum(1 for p in state if p.coords[0] < mid_x)
     right = sum(1 for p in state if p.coords[0] >= mid_x)
 
