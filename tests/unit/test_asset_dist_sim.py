@@ -76,13 +76,16 @@ def test_new_state_prioritizes_larger_radius_species_when_conflicts(sym, monkeyp
     sim_mod = __import__(Simulation.__module__, fromlist=["_"])
 
     class _PoissonStub:
-        def __init__(self, d, radius, l_bounds, u_bounds):  # noqa: ARG002
+        def __init__(self, d, radius, *args, **kwargs):  # noqa: ARG002
             self.radius = radius
 
         def random(self, n):
-            if self.radius >= 5.0:
-                return np.array([[5.0, 5.0]], dtype=float)
-            return np.array([[5.5, 5.0]], dtype=float)  # conflicts with big radius
+            # one point per species; overlapping on purpose
+            if self.radius >= 0.3:  # big radius_unit=5/10=0.5
+                p = np.array([[0.50, 0.50]], dtype=float)
+            else:                   # small radius_unit=1/10=0.1
+                p = np.array([[0.55, 0.50]], dtype=float)
+            return np.repeat(p, repeats=max(int(n), 1), axis=0)
 
         def reset(self):
             return None
@@ -170,13 +173,15 @@ def test_new_state_uses_clearance_radius_semantics_max_not_sum(sym, monkeypatch)
 
 
     class _PoissonStub:
-        def __init__(self, d, radius, l_bounds, u_bounds):  # noqa: ARG002
-            self.radius = radius
+        def __init__(self, d, radius, *args, **kwargs): 
+            self.radius = float(radius)
 
         def random(self, n):
-            if self.radius > 3.0:
-                return np.array([[0.0, 0.0]], dtype=float)
-            return np.array([[4.0, 0.0]], dtype=float)
+            if self.radius >= 0.31:
+                p = np.array([[0.0, 0.0]], dtype=float)
+            else:
+                p = np.array([[0.4, 0.0]], dtype=float)
+            return np.repeat(p, repeats=max(int(n), 1), axis=0)
 
         def reset(self):
             return None

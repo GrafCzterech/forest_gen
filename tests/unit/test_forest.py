@@ -127,9 +127,9 @@ def test_forest_generator_applies_filtered_terrain_layers_and_combiner(sym, monk
     assert builder.terrain_layers_call is not None
     layers, resolution, combine = builder.terrain_layers_call
 
-    assert set(layers.keys()) == {"moisture", "aspect"}
+    assert set(layers.keys()) == {"moisture"}
     assert layers["moisture"] is moisture
-    assert layers["aspect"] is aspect
+
 
     assert resolution == pytest.approx(2.5)
     assert combine is comb

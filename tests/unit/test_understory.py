@@ -105,15 +105,14 @@ def test_patchy_understory_map_thresholding(sym, monkeypatch):
     pytest.importorskip("opensimplex")
 
     _, _, PatchyUnderstoryMap = _resolve_understory_symbols(sym)
-
     mod = __import__(PatchyUnderstoryMap.__module__, fromlist=["_"])
 
     class _Noise:
         def __init__(self, seed):  # noqa: ARG002
-            pass
+            self.value = 0.0
 
         def noise2(self, x, y):  # noqa: ARG002
-            return self.value
+            return self.value 
 
     class _OpenSimplexStub:
         def __init__(self, seed):  # noqa: ARG002
@@ -124,13 +123,21 @@ def test_patchy_understory_map_thresholding(sym, monkeypatch):
 
     monkeypatch.setattr(mod, "OpenSimplex", _OpenSimplexStub)
 
-    pm = PatchyUnderstoryMap(scale=0.1, threshold=0.35, seed=123)
+    pm = PatchyUnderstoryMap(scale=0.1, threshold=0.35, seed=123, gamma=1.0)
 
-    pm.noise._noise.value = 0.8
-    assert pm(1.0, 2.0) == 1.0
-
-    pm.noise._noise.value = 0.1
+    pm.noise._noise.value = -1.0
     assert pm(1.0, 2.0) == 0.0
+
+    thr = 0.35
+    pm.noise._noise.value = 2.0 * (thr - 0.5) 
+    assert pm(1.0, 2.0) == 0.0
+
+    pm.noise._noise.value = 0.8 
+    val = pm(1.0, 2.0)
+    assert 0.0 < val < 1.0
+
+    pm.noise._noise.value = 1.0
+    assert pm(1.0, 2.0) == pytest.approx(1.0)
 
 
 # -------------------- UnderstoryDistributor internals --------------------
@@ -167,24 +174,6 @@ def test_understory_distributor_terrain_layers_omits_slope_viability_when_max_sl
 
     assert "moisture" not in layers
     assert "slope_viability" not in layers 
-
-
-@pytest.mark.unit
-def test_understory_species_viability_is_product_of_patchiness_and_canopy(sym):
-    UnderstoryDistributor, _, _ = _resolve_understory_symbols(sym)
-    Species = _resolve(sym, "Species", "asset_dist.definitions", "asset_dist", "definitions")
-
-    terrain = _TerrainStub(size=10.0, resolution=1.0)
-    d = UnderstoryDistributor(terrain, canopy_positions=[])
-
-    # verride maps to make viability deterministic
-    d.patchiness = lambda x, y: 0.2  # noqa: E731
-    d.canopy_map = lambda x, y: 0.5  # noqa: E731
-
-    sp = d._understory_species()
-    assert isinstance(sp, Species)
-    assert sp.name == "Understory"
-    assert sp.viability_map(1.0, 1.0) == pytest.approx(0.1)
 
 
 # -------------------- UnderstoryDistributor.generate wiring --------------------

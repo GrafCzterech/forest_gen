@@ -22,35 +22,57 @@ understory vegetation using the shared forest simulation pipeline.
 
 class PatchyUnderstoryMap:
     """
-    Binary patchiness mask for understory vegetation.
+    Soft patchiness mask for understory placement driven by simplex noise.
 
-    Uses simplex noise to avoid uniform understory carpets.
+    The map samples 2D simplex noise, remaps it from ``[-1, 1]`` to ``[0, 1]``,
+    applies a hard cutoff at ``threshold``, then rescales the remaining range to
+    ``(0, 1]`` and shapes it using a power curve (``gamma``).
+
+    This produces clustered “patches” of understory rather than a uniform carpet
     """
+    def __init__(self, scale: float = 0.1, threshold: float = 0.35, seed: int | None = None, gamma: float = 0.8):
+        """
+        Initialize the patchiness map.
 
-    def __init__(
-        self,
-        scale: float = 0.1,
-        threshold: float = 0.35,
-        seed: int | None = None,
-    ):
+        :param scale: Spatial frequency multiplier applied to world coordinates
+            before sampling noise.
+        :type scale: float
+        :param threshold: Cutoff applied after remapping noise into ``[0, 1]``.
+            Values at or below this threshold return ``0.0``.
+        :type threshold: float
+        :param seed: Optional seed for the simplex noise generator. If ``None``,
+            a random seed is chosen.
+        :type seed: int or None
+        :param gamma: Power curve applied to the normalized patch strength above
+            the threshold. ``gamma < 1`` boosts patch strength; ``gamma > 1``
+            suppresses it.
+        :type gamma: float
+        """
         self.scale = scale
-        self.threshold = threshold
-        self.noise = OpenSimplex(
-            seed if seed is not None else random.randint(0, 10_000)
-        )
+        self.threshold = threshold 
+        self.gamma = gamma
+        self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
 
     def __call__(self, x: float, y: float) -> float:
         """
-        Evaluate patch presence at world coordinates.
+        Evaluate patch viability at world coordinates.
 
-        :return: ``1.0`` if location is inside a patch, otherwise ``0.0``.
+        :param x: World-space x coordinate.
+        :type x: float
+        :param y: World-space y coordinate.
+        :type y: float
+        :return: Patch strength in ``[0.0, 1.0]`` (0 means no patch).
         :rtype: float
         """
-        return (
-            1.0
-            if self.noise.noise2(x * self.scale, y * self.scale) > self.threshold
-            else 0.0
-        )
+        v = self.noise.noise2(x * self.scale, y * self.scale) * 0.5 + 0.5
+        v = 0.0 if v < 0.0 else 1.0 if v > 1.0 else v
+
+        t = self.threshold
+        if v <= t:
+            return 0.0
+        v = (v - t) / max(1.0 - t, 1e-9)
+
+        return float(v ** self.gamma)
 
 
 class CanopyShadeMap:
@@ -142,16 +164,21 @@ class UnderstoryDistributor:
                 )
 
         return layers
-
+    
     def _combine_layers(self, values: Mapping[str, float]) -> float:
-        result = 1.0
-        for value in values.values():
-            result *= value
-        return result
+        terrain_floor = 0.30
+
+        avg = sum(values.values()) / max(len(values), 1)
+        avg = 0.0 if avg < 0.0 else 1.0 if avg > 1.0 else avg
+        return float(terrain_floor + (1.0 - terrain_floor) * avg)
 
     def _understory_species(self) -> Species:
+        species_floor = 0.10  # try 0.10..0.25
+
         def viability(x: float, y: float) -> float:
-            return self.patchiness(x, y) * self.canopy_map(x, y)
+            base = self.patchiness(x, y) * self.canopy_map(x, y)
+            base = 0.0 if base < 0.0 else 1.0 if base > 1.0 else base
+            return float(species_floor + (1.0 - species_floor) * base)
 
         return Species(
             "Understory",
@@ -161,6 +188,8 @@ class UnderstoryDistributor:
             reproduction_radius=self.reproduction_radius,
             radius=self.radius,
             viability_map=viability,
+            juvenile_recovery_age=0.0,
+            juvenile_mortality_depth=0.0,
         )
 
     def generate(self, config: ForestConfig) -> SimulationState:

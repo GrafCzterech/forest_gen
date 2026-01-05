@@ -22,25 +22,17 @@ existing Simulation / ForestBuilder infrastructure.
 
 
 class PatchyGrassMap:
-    """
-    Binary patchiness mask driven by simplex noise.
-    """
+    """Soft patchiness mask for Grass placement. Look at PatchyUnderstoryMap for more information."""
 
-    def __init__(self, scale: float = 0.2, seed: int | None = None):
+    def __init__(self, scale: float = 0.2, seed: int | None = None, gamma: float = 0.7):
         self.scale = scale
-        self.noise = OpenSimplex(
-            seed if seed is not None else random.randint(0, 10_000)
-        )
+        self.gamma = gamma
+        self.noise = OpenSimplex(seed if seed is not None else random.randint(0, 10_000))
 
     def __call__(self, x: float, y: float) -> float:
-        """
-        Evaluate patch presence at world coordinates.
-
-        :return: ``1.0`` inside grass patches, otherwise ``0.0``.
-        :rtype: float
-        """
-        return 1.0 if self.noise.noise2(x * self.scale, y * self.scale) > 0 else 0.0
-
+        v = self.noise.noise2(x * self.scale, y * self.scale) * 0.5 + 0.5  # [0,1]
+        v = 0.0 if v < 0.0 else 1.0 if v > 1.0 else v
+        return float(v ** self.gamma)
 
 class TreeProximityMap:
     """
@@ -94,17 +86,23 @@ class GrassDistributor:
         reproduction_rate: int = 3,
         reproduction_radius: float = 2.5,
         radius: float = 0.6,
+        patch_gamma: float = 0.7,
+        species_floor: float = 0.15, 
+        terrain_floor: float = 0.35, 
     ):
         self.terrain = terrain
         self.tree_map = TreeProximityMap(
             tree_positions or [], hard_radius, falloff_radius
         )
-        self.patchiness = PatchyGrassMap(patch_scale)
+        self.patchiness = PatchyGrassMap(patch_scale, gamma=patch_gamma) 
         self.max_age = max_age
         self.species_density = species_density
         self.reproduction_rate = reproduction_rate
         self.reproduction_radius = reproduction_radius
         self.radius = radius
+        
+        self.species_floor = species_floor
+        self.terrain_floor = terrain_floor
 
     def _terrain_layers(self) -> Mapping[str, np.ndarray]:
         """Build terrain viability layers emphasizing gentle slopes."""
@@ -123,14 +121,15 @@ class GrassDistributor:
         return layers
 
     def _combine_layers(self, values: Mapping[str, float]) -> float:
-        result = 1.0
-        for value in values.values():
-            result *= value
-        return result
+        avg = sum(values.values()) / max(len(values), 1)
+        avg = 0.0 if avg < 0.0 else 1.0 if avg > 1.0 else avg
+        return float(self.terrain_floor + (1.0 - self.terrain_floor) * avg)
 
     def _grass_species(self) -> Species:
         def viability(x: float, y: float) -> float:
-            return self.patchiness(x, y) * self.tree_map(x, y)
+            base = self.patchiness(x, y) * self.tree_map(x, y)
+            base = 0.0 if base < 0.0 else 1.0 if base > 1.0 else base
+            return float(self.species_floor + (1.0 - self.species_floor) * base)
 
         return Species(
             "Grass",
@@ -140,6 +139,8 @@ class GrassDistributor:
             reproduction_radius=self.reproduction_radius,
             radius=self.radius,
             viability_map=viability,
+            juvenile_recovery_age=0.0,
+            juvenile_mortality_depth=0.0,
         )
 
     def generate(self, config: ForestConfig) -> SimulationState:
