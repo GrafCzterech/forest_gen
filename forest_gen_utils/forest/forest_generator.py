@@ -52,10 +52,12 @@ class ForestGenerator:
 
             available_layers = {
                 "moisture": terrain.moisture,
-                "slope": terrain.slope,
-                "aspect": terrain.aspect,
                 **(terrain_layers or {}),
             }
+
+            if terrain.slope is not None:
+                max_slope = float(np.max(terrain.slope)) or 1.0
+                available_layers["slope_viability"] = 1.0 - np.clip(terrain.slope / max_slope, 0.0, 1.0)
             filtered_layers = {
                 name: layer
                 for name, layer in available_layers.items()

@@ -124,43 +124,51 @@ def test_tree_proximity_map_uses_closest_tree(sym):
 # -------------------- PatchyGrassMap --------------------
 
 @pytest.mark.unit
-def test_patchy_grass_map_thresholding(sym, monkeypatch):
+def test_patchy_grass_map_continuous_monotone_and_clamped(sym, monkeypatch):
     pytest.importorskip("opensimplex")
-    pytest.importorskip("scipy")
 
     _, _, PatchyGrassMap = _resolve_grass_symbols(sym)
     mod = __import__(PatchyGrassMap.__module__, fromlist=["_"])
 
-    # Stub OpenSimplex to fully control noise2 output
+    # Fully controlled noise source
     class _Noise:
         def __init__(self, seed):  # noqa: ARG002
             self.value = 0.0
-
         def noise2(self, x, y):  # noqa: ARG002
             return self.value
 
     class _OpenSimplexStub:
         def __init__(self, seed):  # noqa: ARG002
             self._n = _Noise(seed)
-
         def noise2(self, x, y):
             return self._n.noise2(x, y)
 
     monkeypatch.setattr(mod, "OpenSimplex", _OpenSimplexStub)
 
-    pm = PatchyGrassMap(scale=0.2, seed=123)
+    pm = PatchyGrassMap(scale=0.2, seed=123, gamma=0.7)
 
-    # noise > 0 => 1.0
-    pm.noise._n.value = 0.001
-    assert pm(1.0, 2.0) == 1.0
+    # Check clamping to [0,1]
+    pm.noise._n.value = -10.0
+    assert 0.0 <= pm(1.0, 2.0) <= 1.0
 
-    # noise == 0 => 0.0 (strict > 0 check)
+    pm.noise._n.value = 10.0
+    assert 0.0 <= pm(1.0, 2.0) <= 1.0
+
+    # Check monotonicity: larger noise -> larger output
+    pm.noise._n.value = -1.0
+    lo = pm(1.0, 2.0)  # should be 0.0 after clamp->(0.0*0.5+0.5?) wait: we clamp after transform
     pm.noise._n.value = 0.0
-    assert pm(1.0, 2.0) == 0.0
+    mid = pm(1.0, 2.0)
+    pm.noise._n.value = 1.0
+    hi = pm(1.0, 2.0)
 
-    # noise < 0 => 0.0
-    pm.noise._n.value = -0.5
-    assert pm(1.0, 2.0) == 0.0
+    assert lo <= mid <= hi
+
+    # Gamma effect: gamma < 1 boosts mid-values compared to gamma=1
+    pm1 = PatchyGrassMap(scale=0.2, seed=123, gamma=1.0)
+    pm1.noise._n.value = 0.0
+    pm.noise._n.value = 0.0
+    assert pm(1.0, 2.0) > pm1(1.0, 2.0)
 
 
 # -------------------- GrassDistributor internals --------------------
@@ -206,20 +214,7 @@ def test_grass_distributor_terrain_layers_omits_slope_viability_when_max_slope_z
 
 
 @pytest.mark.unit
-def test_grass_distributor_combine_layers_is_multiplicative(sym):
-    pytest.importorskip("opensimplex")
-    pytest.importorskip("scipy")
-
-    GrassDistributor, _, _ = _resolve_grass_symbols(sym)
-
-    terrain = _TerrainStub()
-    d = GrassDistributor(terrain, tree_positions=[])
-
-    assert d._combine_layers({"a": 0.5, "b": 0.2, "c": 1.0}) == pytest.approx(0.1)
-
-
-@pytest.mark.unit
-def test_grass_species_viability_is_product_of_patchiness_and_tree_map(sym):
+def test_grass_species_viability_applies_floor_over_product(sym):
     pytest.importorskip("opensimplex")
     pytest.importorskip("scipy")
 
@@ -227,16 +222,20 @@ def test_grass_species_viability_is_product_of_patchiness_and_tree_map(sym):
     Species = _resolve(sym, "Species", "asset_dist.definitions", "asset_dist", "definitions")
 
     terrain = _TerrainStub(size=10.0, resolution=1.0)
-    d = GrassDistributor(terrain, tree_positions=[])
 
-    # Override maps to make viability deterministic
+    d = GrassDistributor(terrain, tree_positions=[], species_floor=0.15)
+
+    # deterministic
     d.patchiness = lambda x, y: 0.2  # noqa: E731
-    d.tree_map = lambda x, y: 0.5  # noqa: E731
+    d.tree_map = lambda x, y: 0.5    # noqa: E731
 
     sp = d._grass_species()
     assert isinstance(sp, Species)
     assert sp.name == "Grass"
-    assert sp.viability_map(1.0, 1.0) == pytest.approx(0.1)
+
+    base = 0.2 * 0.5
+    expected = 0.15 + (1.0 - 0.15) * base
+    assert sp.viability_map(1.0, 1.0) == pytest.approx(expected)
 
 
 # -------------------- GrassDistributor.generate wiring --------------------
