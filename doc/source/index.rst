@@ -18,3 +18,4 @@ environments.
    forest_gen
    forest_gen_utils
    stripe_kit documentation <https://grafczterech.github.io/STRIPE-kit/>
+   Repository <https://github.com/GrafCzterech/forest_gen>
