@@ -21,6 +21,12 @@ If you want to quickly preview how the generated scene looks like, we have
 a simple script `sim.py` at repo root that simply generates the scene and 
 simulates it in IsaacLab. Running it is as simple as:
 
-```
+```bash
 python sim.py
 ```
+
+We also have included an example of a task definition utilizing `stripe_kit`
+and `forest_gen` in `task.py`. You can technically use it verbatim, should
+you add a wrapper over it that would register the exported `task_spec`,
+however that file is meant to be more of a reference for how to use the
+modules.
