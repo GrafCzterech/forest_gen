@@ -29,7 +29,7 @@ include = ["forest_gen*", "forest_gen_utils*"]
 exclude = ["build*", "dist*", "doc*", "tests*"]
 
 [project.optional-dependencies]
-dev = ["black"]
+dev = ["black","pytest"]
 vis = ["matplotlib", "ipykernel"]
 export = ["pillow"]
 
