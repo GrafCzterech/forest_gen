@@ -3,6 +3,7 @@ import random
 from collections import Counter
 from copy import deepcopy
 from logging import getLogger
+import numpy as np
 
 from opensimplex import noise2
 from stripe_kit import (
@@ -78,20 +79,46 @@ obstacle_params = {
 }
 
 understory_params = {
-    "scene_density": 0.036,
-    "preferred_distance": 5.0,
-    "avoid_radius": 2.2,
+    "scene_density": 0.2,
+    "preferred_distance": 1.4,
+    "avoid_radius": 0.8,
     "falloff_radius": 11.0,
     "patch_scale": 0.12,
     "patch_threshold": 0.5,
-    "species_density": 0.026,
-    "reproduction_rate": 1,
+    "species_density":  0.2,
+    "reproduction_rate":2,
     "reproduction_radius": 6.0,
     "radius": 2.6,
     "max_age": 35,
     "simulation_years": forest_params["simulation_years"],
 }
 
+species_params = {
+    'pine': {
+        'max_age': 85,
+        'species_density': 0.05,
+        'reproduction_rate': 2,
+        'reproduction_radius': 7.0,
+        'radius': 1.8,
+        'moisture_center': 0.16,
+        'moisture_width': 0.26,
+        'max_slope_deg': 38,
+    },
+}
+
+
+species_params_2 = {
+    'birch': {
+        'max_age': 85,
+        'species_density': 0.03,
+        'reproduction_rate': 2,
+        'reproduction_radius': 7.0,
+        'radius': 1.6,
+        'moisture_center': 0.14,
+        'moisture_width': 0.23,
+        'max_slope_deg': 22,
+    },
+}
 
 def classify_terrain(x: float, y: float) -> str:
     """Classify the terrain based on the x and y coordinates.
@@ -183,7 +210,7 @@ class ForestGenSpec(SceneSpec):
             TerrainBuilder()
             .with_noise("fractal")
             .with_microrelief(True)
-            .with_moisture_model({})
+            .with_moisture_model({'flow': 0.55, 'slope': 0.30, 'aspect': 0.15})
             .build()
         )
         terrain_cfg = TerrainConfig(
@@ -243,13 +270,128 @@ class PlantSpec(AssetSpec):
 
         # create factory for assets
         model_factory = PlantModelFactory(path=self.path)
+        
+        extra_layers = {
+            "moisture_weight": np.clip(terrain.raw.moisture, 0.0, 1.0),
+            "slope_weight": np.clip(1.0 - terrain.raw.slope / 45.0, 0.0, 1.0),  # FIX
+        }
+
+        layer_weights = {
+            'moisture': 0.25,
+            'slope': 0.20,
+            'aspect': 0.15,
+            'moisture_weight': 0.25,
+            'slope_weight': 0.15,
+        }
+
+        def combine_layers(layers: dict[str, float]) -> float:
+            mw = float(np.clip(layers.get("moisture_weight", 1.0), 0.0, 1.0))
+            sw = float(np.clip(layers.get("slope_weight", 1.0), 0.0, 1.0))
+
+            # Keep weights simple & explicit
+            w_m, w_s = 0.65, 0.35
+            return float((w_m * mw + w_s * sw) / (w_m + w_s))
+
+        def sample_layer(layer, x: float, y: float) -> float:
+            i = np.clip(terrain.raw.config.transform(y), 0, layer.shape[0] - 1)
+            j = np.clip(terrain.raw.config.transform(x), 0, layer.shape[1] - 1)
+            return float(layer[int(i), int(j)])
+
+        def moisture_pref(center: float, width: float):
+            def wrapper(x: float, y: float) -> float:
+                m = sample_layer(terrain.raw.moisture, x, y)
+                return np.exp(-((m - center) ** 2) / (2 * width ** 2))
+            return wrapper
+
+        def slope_mask(max_degrees: float):
+            def wrapper(x: float, y: float) -> float:
+                slope_deg = sample_layer(terrain.raw.slope, x, y)  # already degrees
+                return float(np.clip(1.0 - slope_deg / max_degrees, 0.0, 1.0))
+            return wrapper
+
+        pine_params = species_params['pine']
+        birch_params = species_params_2['birch']
+        pine_m = moisture_pref(pine_params["moisture_center"], pine_params["moisture_width"])
+        pine_s = slope_mask(pine_params["max_slope_deg"])
+        birch_m = moisture_pref(birch_params["moisture_center"], birch_params["moisture_width"])
+        birch_s = slope_mask(birch_params["max_slope_deg"])
+
+
+        pine = Species(
+            name="Pine",
+            max_age=pine_params["max_age"],
+            species_density=pine_params["species_density"],
+            reproduction_rate=pine_params["reproduction_rate"],
+            reproduction_radius=pine_params["reproduction_radius"],
+            radius=pine_params["radius"],
+            viability_map=lambda x, y, _m=pine_m, _s=pine_s: _m(x, y) * _s(x, y),
+        )
+
+        birch = Species(
+            name="Birch",
+            max_age=pine_params["max_age"],
+            species_density=pine_params["species_density"],
+            reproduction_rate=pine_params["reproduction_rate"],
+            reproduction_radius=pine_params["reproduction_radius"],
+            radius=pine_params["radius"],
+            viability_map=lambda x, y, _m=pine_m, _s=pine_s: _m(x, y) * _s(x, y),
+        )      
 
         forest = (
             ForestBuilder()
             .with_size(terrain.size)
             .with_terrain(terrain.raw)
-            .add_species("trees", Species("Pine", 10, 0.005, radius=2.0))
+            .with_terrain_viability_layers(extra_layers, combine=combine_layers)
+            .add_species("trees", pine)
+            .add_species("trees", birch)
             .build()
+        )
+
+
+
+        def viability_report(sp, size=50.0, n=5000):
+            rng = np.random.default_rng(0)
+            pts = rng.uniform([0,0],[size,size], size=(n,2))
+            vals = np.array([sp.viability_map(x,y) for x,y in pts], dtype=float)
+            vals = np.clip(vals, 0.0, 1.0)
+            logger.debug(f"{sp.name} | "
+        f"mean={vals.mean():.4f}, "
+        f"p50={np.quantile(vals, 0.5):.4f}, "
+        f"p90={np.quantile(vals, 0.9):.4f}, "
+        f"max={vals.max():.4f}")
+        def factor_report(name, f, size=50.0, n=5000):
+            rng = np.random.default_rng(0)
+            pts = rng.uniform([0,0],[size,size], size=(n,2))
+            vals = np.array([f(x,y) for x,y in pts], dtype=float)
+            vals = np.clip(vals, 0.0, 1.0)
+            logger.debug(
+                f"{name} | mean={vals.mean():.4f}, "
+                f"p50={np.quantile(vals,0.5):.4f}, "
+                f"p90={np.quantile(vals,0.9):.4f}, "
+                f"max={vals.max():.4f}"
+            )
+            return vals
+
+        factor_report("Pine.moisture_pref", pine_m)
+        factor_report("Pine.slope_mask", pine_s)
+        factor_report("Pine.product", lambda x,y: pine_m(x,y) * pine_s(x,y))
+        viability_report(pine)
+
+        m = terrain.raw.moisture
+        s = terrain.raw.slope
+
+        logger.debug(
+            f"moisture | "
+            f"median={np.median(m):.4f}, "
+            f"p10={np.quantile(m, 0.1):.4f}, "
+            f"p90={np.quantile(m, 0.9):.4f}"
+        )
+
+        logger.debug(
+            f"slope | "
+            f"median={np.median(s):.4f}, "
+            f"p90={np.quantile(s, 0.9):.4f}, "
+            f"max={np.max(s):.4f}"
         )
 
         # do the trees simulation
