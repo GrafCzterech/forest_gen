@@ -11,7 +11,7 @@ copyright = (
     "2025, Tomasz Chady, Jakub Markil, Patryk Olszewski, Oskar Winiarski"
 )
 author = "Tomasz Chady, Jakub Markil, Patryk Olszewski, Oskar Winiarski"
-release = "0.3.7"
+release = "0.3.8"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
